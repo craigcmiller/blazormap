@@ -1,0 +1,13 @@
+﻿<div class="map" >
+    <SKGLView
+        id="@_id"
+        class="mapCanvas"
+        @ref="_view"
+        OnPaintSurface="OnPaintSurface"
+        IgnorePixelScaling="true"
+        EnableRenderLoop="true"
+        @onmousedown="OnMouseDown"
+        @onmouseup="OnMouseUp"
+        @onmousemove="OnMouseMove"
+        @onmousewheel="OnMouseWheel" />
+</div>
