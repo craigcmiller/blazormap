@@ -2,7 +2,7 @@
 {
     public class GeoConverter
     {
-        private double _canvasWidth, _canvasHeight;
+        private double _canvasWidth, _canvasHeight, _zoom;
 
         public GeoConverter(IProjection projection)
         {
@@ -19,7 +19,17 @@
 
         public double ProjectedHeight { get; set; }
 
-        public double Zoom { get; set; }
+        public double Zoom
+        {
+            get => _zoom;
+            set
+            {
+                _zoom = value;
+
+                ProjectedWidth = _canvasWidth / _zoom;
+                ProjectedHeight = _canvasHeight / _zoom;
+            }
+        }
 
         public double CanvasWidth
         {

@@ -54,6 +54,15 @@ namespace CraigMiller.BlazorMap
                 IsAntialias = true
             };
 
+            _worldView.CanvasToProjected(0, 0, out double leftPrj, out double topPrj);
+            _worldView.Projection.ToLatLon(leftPrj, topPrj, out double topLat, out double leftLon);
+            canvas.DrawText($"{topLat:0.00} {leftLon:0.00}", new SKPoint(20, 20), new SKPaint
+            {
+                Style = SKPaintStyle.Fill,
+                IsAntialias = true,
+                Color = SKColors.Black
+            });
+
             // Draw latitude grid lines
             for (double lat = -80; lat <= 80; lat += 10)
             {
@@ -139,10 +148,6 @@ namespace CraigMiller.BlazorMap
 
         private void OnMouseWheel(WheelEventArgs args)
         {
-            Console.WriteLine($"{args.OffsetX} {args.OffsetY}");
-
-            //_worldView.CanvasToProjected(0.0, 0.0, out double left, out double top);
-
             // Record the projected position of the mouse
             _worldView.CanvasToProjected(args.OffsetX, args.OffsetY, out double projectedMouseX, out double projectedMouseY);
 
@@ -152,8 +157,8 @@ namespace CraigMiller.BlazorMap
             // Get where the mouse now is
             _worldView.CanvasToProjected(args.OffsetX, args.OffsetY, out double offsetPrjX, out double offsetPrjY);
 
-            _worldView.ProjectedX = projectedMouseX + (projectedMouseX - offsetPrjX);
-            _worldView.ProjectedY = projectedMouseY - (projectedMouseY - offsetPrjY);
+            _worldView.ProjectedX += projectedMouseX - offsetPrjX;
+            _worldView.ProjectedY += projectedMouseY - offsetPrjY;
         }
 
         [Inject]
