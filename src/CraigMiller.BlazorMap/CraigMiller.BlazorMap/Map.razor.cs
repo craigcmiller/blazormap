@@ -4,6 +4,7 @@ using Microsoft.JSInterop;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using CraigMiller.BlazorMap.Engine;
+using CraigMiller.BlazorMap.Layers;
 
 namespace CraigMiller.BlazorMap
 {
@@ -11,19 +12,27 @@ namespace CraigMiller.BlazorMap
     {
         private SKGLView? _view;
         private readonly string _id = $"{nameof(Map).ToLower()}_{Guid.NewGuid().ToString().Replace("-", "")}";
-        private readonly GeoConverter _worldView;
-        private bool _isDragging;
-        private PointD _previousMousePosition;
-        private DateTime _previousMouseDragTime;
+        private readonly Engine.Map _map;
 
         public Map()
         {
-            _worldView = new GeoConverter(new SmcProjection())
+            _map = new Engine.Map();
+
+            _map.Layers.Add(new BackgroundFillLayer());
+            _map.Layers.Add(new GridLineLayer());
+
+            _map.Layers.Add(new CircleMarkerLayer
             {
-                ProjectedX = SmcProjection.WorldMin,
-                ProjectedY = SmcProjection.WorldMin,
-                Zoom = 0.0001
-            };
+                Locations = new List<Location> {
+                    new Location(51,0),
+                    new Location(80,-170),
+                    new Location(80,170),
+                    new Location(-80, -170),
+                    new Location(-80, 170)
+                }
+            });
+
+            _map.Layers.Add(new DiagnosticsLayer());
         }
 
         protected override async Task OnInitializedAsync()
@@ -38,63 +47,14 @@ namespace CraigMiller.BlazorMap
         {
             //Console.WriteLine($"WV: {paintEventArgs.BackendRenderTarget.Width}, {paintEventArgs.BackendRenderTarget.Height} - {paintEventArgs.Info.Width} {paintEventArgs.Info.Height}");
 
-            _worldView.CanvasWidth = paintEventArgs.Info.Width;
-            _worldView.CanvasHeight = paintEventArgs.Info.Height;
+            _map.AreaView.CanvasWidth = paintEventArgs.Info.Width;
+            _map.AreaView.CanvasHeight = paintEventArgs.Info.Height;
 
             SKCanvas canvas = paintEventArgs.Surface.Canvas;
             //canvas.Scale(paintEventArgs.BackendRenderTarget.Width / paintEventArgs.Info.Width, paintEventArgs.BackendRenderTarget.Height / paintEventArgs.Info.Height);
             //canvas.Scale(paintEventArgs.Info.Width / paintEventArgs.BackendRenderTarget.Width, paintEventArgs.Info.Height / paintEventArgs.BackendRenderTarget.Height);
-            canvas.Clear(SKColors.LightBlue);
 
-            using var gridPaint = new SKPaint
-            {
-                Color = SKColors.DarkGray,
-                StrokeWidth = 2f,
-                Style = SKPaintStyle.Stroke,
-                IsAntialias = true
-            };
-
-            _worldView.CanvasToProjected(0, 0, out double leftPrj, out double topPrj);
-            _worldView.Projection.ToLatLon(leftPrj, topPrj, out double topLat, out double leftLon);
-            canvas.DrawText($"{topLat:0.00} {leftLon:0.00}", new SKPoint(20, 20), new SKPaint
-            {
-                Style = SKPaintStyle.Fill,
-                IsAntialias = true,
-                Color = SKColors.Black
-            });
-
-            // Draw latitude grid lines
-            for (double lat = -80; lat <= 80; lat += 10)
-            {
-                _worldView.LatLonToCanvas(lat, 0, out _, out float cnvY);
-
-                canvas.DrawLine(0, cnvY, (float)_worldView.CanvasWidth, cnvY, gridPaint);
-            }
-
-            // Draw longitude grid lines
-            for (double lon = -180; lon <= 180; lon += 10)
-            {
-                _worldView.LatLonToCanvas(0, lon, out float cnvX, out _);
-
-                canvas.DrawLine(cnvX, 0, cnvX, (float)_worldView.CanvasHeight, gridPaint);
-            }
-
-            DrawMarker(canvas, 51, 0);
-            DrawMarker(canvas, 80, -170);
-            DrawMarker(canvas, 80, 170);
-            DrawMarker(canvas, -80, -170);
-            DrawMarker(canvas, -80, 170);
-        }
-
-        private void DrawMarker(SKCanvas canvas, double lat, double lon)
-        {
-            _worldView.LatLonToCanvas(lat, lon, out float x, out float y);
-            canvas.DrawCircle(x, y, 10f, new SKPaint
-            {
-                Color = SKColors.Red,
-                Style = SKPaintStyle.Stroke,
-                StrokeWidth = 3f
-            });
+            _map.Paint(canvas);
         }
 
         private void OnMouseDown(MouseEventArgs args)
@@ -102,63 +62,29 @@ namespace CraigMiller.BlazorMap
             switch (args.Button)
             {
                 case 0:
-                    _isDragging = true;
-                    _previousMousePosition = new PointD(args.OffsetX, args.OffsetY);
-                    _previousMouseDragTime = DateTime.UtcNow;
-
+                    _map.PrimaryMouseDown(args.OffsetX, args.OffsetY);
                     break;
             }
         }
 
         private void OnMouseUp(MouseEventArgs args)
         {
-            _isDragging = false;
+            _map.PrimaryMouseUp();
         }
 
         private void OnMouseMove(MouseEventArgs args)
         {
             //Console.WriteLine($"Mouse: {args.OffsetX} {args.OffsetY}");
 
-            if (_isDragging && args.Button == 0)
+            if (args.Button == 0)
             {
-                double mouseX = args.OffsetX;
-                double mouseY = args.OffsetY;
-
-                double xDiff = mouseX - _previousMousePosition.X;
-                double yDiff = mouseY - _previousMousePosition.Y;
-
-                _worldView.CanvasToProjected(0d, 0d, out double projectedLeft, out double projectedTop);
-                _worldView.CanvasToProjected(xDiff, yDiff, out double projectedDiffX, out double projectedDiffY);
-
-                _worldView.ProjectedX -= projectedDiffX - projectedLeft;
-                _worldView.ProjectedY -= projectedDiffY - projectedTop;
-
-                //const currentDragTime = (new Date()).getTime();
-
-                //const dragTimeDelta = (currentDragTime - this.previousMouseDragTime) / 1000.0 * this.inertialFramePerSec;
-
-                // Store mouse deltas for inertial pan
-                //this.inertialX = (mousePosition.x - this.previousMousePosition.x) * dragTimeDelta;
-                //this.inertialY = (mousePosition.y - this.previousMousePosition.y) * dragTimeDelta;
-
-                _previousMousePosition = new PointD(mouseX, mouseY);
-                //_previousMouseDragTime = currentDragTime;
+                _map.PrimaryMouseMove(args.OffsetX, args.OffsetY);
             }
         }
 
         private void OnMouseWheel(WheelEventArgs args)
         {
-            // Record the projected position of the mouse
-            _worldView.CanvasToProjected(args.OffsetX, args.OffsetY, out double projectedMouseX, out double projectedMouseY);
-
-            // Change the zoom level
-            _worldView.Zoom += (-args.DeltaY / 240d / 20d) * _worldView.Zoom;
-
-            // Get where the mouse now is
-            _worldView.CanvasToProjected(args.OffsetX, args.OffsetY, out double offsetPrjX, out double offsetPrjY);
-
-            _worldView.ProjectedX += projectedMouseX - offsetPrjX;
-            _worldView.ProjectedY += projectedMouseY - offsetPrjY;
+            _map.ZoomOn(args.OffsetX, args.OffsetY, -args.DeltaY / 240d / 20d);
         }
 
         [Inject]
