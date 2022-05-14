@@ -2,7 +2,7 @@
 {
     public class GeoConverter
     {
-        private double _canvasWidth, _canvasHeight, _zoom;
+        double _canvasWidth, _canvasHeight, _zoom;
 
         public GeoConverter(IProjection projection)
         {
@@ -80,5 +80,7 @@
             canvasX = (float)canvasXD;
             canvasY = (float)canvasYD;
         }
+
+        public RectD ProjectedRect => new RectD(ProjectedX, ProjectedY, ProjectedWidth, ProjectedHeight);
     }
 }

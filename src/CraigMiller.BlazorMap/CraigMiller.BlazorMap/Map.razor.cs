@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using CraigMiller.BlazorMap.Engine;
 using CraigMiller.BlazorMap.Layers;
+using CraigMiller.BlazorMap.Layers.Tiling;
 
 namespace CraigMiller.BlazorMap
 {
@@ -17,8 +18,24 @@ namespace CraigMiller.BlazorMap
         public Map()
         {
             _map = new Engine.Map();
+        }
 
+        protected override async Task OnInitializedAsync()
+        {
+            base.OnInitialized();
+
+            AddMapLayers();
+
+            await using MapJsInterop mapJsInterop = new(JSRuntime!);
+            await mapJsInterop.FitToContainer(_id);
+        }
+
+        private void AddMapLayers()
+        {
             _map.Layers.Add(new BackgroundFillLayer());
+
+            _map.Layers.Add(new TileLayer(HttpClient));
+
             _map.Layers.Add(new GridLineLayer());
 
             _map.Layers.Add(new CircleMarkerLayer
@@ -33,14 +50,6 @@ namespace CraigMiller.BlazorMap
             });
 
             _map.Layers.Add(new DiagnosticsLayer());
-        }
-
-        protected override async Task OnInitializedAsync()
-        {
-            base.OnInitialized();
-
-            await using MapJsInterop mapJsInterop = new(JSRuntime!);
-            await mapJsInterop.FitToContainer(_id);
         }
 
         private void OnPaintSurface(SKPaintGLSurfaceEventArgs paintEventArgs)
@@ -86,6 +95,9 @@ namespace CraigMiller.BlazorMap
         {
             _map.ZoomOn(args.OffsetX, args.OffsetY, -args.DeltaY / 240d / 20d);
         }
+
+        [Inject]
+        public HttpClient? HttpClient { get; set; }
 
         [Inject]
         public IJSRuntime? JSRuntime { get; set; }
