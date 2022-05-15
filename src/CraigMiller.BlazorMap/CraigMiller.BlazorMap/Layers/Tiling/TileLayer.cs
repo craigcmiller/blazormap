@@ -9,18 +9,13 @@ namespace CraigMiller.BlazorMap.Layers.Tiling
     {
         readonly HttpClient _httpClient;
         readonly ISet<Tile> _loadingTiles;
-        readonly IDictionary<Tile, SKBitmap> _cache;
-        //readonly IMemoryCache _cache;
+        readonly AccessOrderedCache<Tile, SKBitmap> _cache;
 
         public TileLayer(HttpClient httpClient)
         {
             _httpClient = httpClient;
             _loadingTiles = new HashSet<Tile>();
-            _cache = new Dictionary<Tile, SKBitmap>();
-            /*_cache = new MemoryCache(Options.Create(new MemoryCacheOptions
-            {
-                SizeLimit = 256
-            }));*/
+            _cache = new AccessOrderedCache<Tile, SKBitmap>((_, bitmap) => bitmap.Dispose());
         }
 
         public void DrawLayer(SKCanvas canvas, GeoConverter converter)
@@ -31,6 +26,11 @@ namespace CraigMiller.BlazorMap.Layers.Tiling
 
             foreach (Tile tile in Tile.GetTilesInProjectedRect(projectedRect, zoomLevel, TileSize))
             {
+                if (!projectedRect.IntersectsWith(tile.GetProjectedBounds(TileSize)))
+                {
+                    continue;
+                }
+
                 if (_cache.TryGetValue(tile, out SKBitmap? bitmap))
                 {
                     RectD projected = tile.GetProjectedBounds(TileSize);
@@ -46,24 +46,22 @@ namespace CraigMiller.BlazorMap.Layers.Tiling
                     {
                         HttpResponseMessage resp = t.Result;
 
-                        SKBitmap bitmap = SKBitmap.Decode(resp.Content.ReadAsStream());
-
-                        //ICacheEntry cacheEntry = _cache.CreateEntry(tile);
-                        //cacheEntry.SetValue(bitmap);
-
-                        if (_cache.Count > 256)
+                        Task.Run(() =>
                         {
-                            foreach(SKBitmap toDispose in _cache.Values)
+                            SKBitmap bitmap;
+                            using (Stream stream = resp.Content.ReadAsStream())
                             {
-                                toDispose.Dispose();
+                                bitmap = SKBitmap.Decode(stream);
                             }
+                            resp.Dispose();
 
-                            _cache.Clear();
-                        }
+                            _cache.Add(tile, bitmap);
 
-                        _cache.Add(tile, bitmap);
-
-                        _loadingTiles.Remove(tile);
+                            lock (_loadingTiles)
+                            {
+                                _loadingTiles.Remove(tile);
+                            }
+                        });
                     });
                 }
             }

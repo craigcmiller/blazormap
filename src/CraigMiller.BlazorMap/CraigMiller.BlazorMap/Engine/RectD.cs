@@ -15,5 +15,12 @@
         public double Right => X + Width;
 
         public double Bottom => Y + Height;
+
+        /// <summary>
+        /// Gets if this rect intersects with <paramref name="rect"/>
+        /// </summary>
+        /// <param name="rect"></param>
+        /// <returns></returns>
+        public bool IntersectsWith(RectD rect) => rect.X < Right && X < rect.Right && rect.Y < Bottom && Y < rect.Bottom;
     }
 }
