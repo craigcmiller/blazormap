@@ -7,12 +7,14 @@ namespace CraigMiller.BlazorMap.Layers
     {
         public void DrawLayer(SKCanvas canvas, GeoConverter converter)
         {
+            using SKPathEffect pathEffect = SKPathEffect.CreateDash(new[] { 4f, 2f }, 0);
             using var gridPaint = new SKPaint
             {
                 Color = SKColors.DarkGray,
                 StrokeWidth = 2f,
                 Style = SKPaintStyle.Stroke,
-                IsAntialias = true
+                IsAntialias = true,
+                PathEffect = pathEffect
             };
 
             // Draw latitude grid lines

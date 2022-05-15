@@ -34,7 +34,7 @@ namespace CraigMiller.BlazorMap
         {
             _map.Layers.Add(new BackgroundFillLayer());
 
-            _map.Layers.Add(new TileLayer(HttpClient));
+            _map.Layers.Add(new TileLayer(new HttpTileLoader(HttpClient!)));
 
             _map.Layers.Add(new GridLineLayer());
 

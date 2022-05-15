@@ -1,21 +1,23 @@
 ﻿using CraigMiller.BlazorMap.Engine;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Options;
 using SkiaSharp;
 
 namespace CraigMiller.BlazorMap.Layers.Tiling
 {
     public class TileLayer : ILayer
     {
-        readonly HttpClient _httpClient;
+        readonly ITileLoader _tileLoader;
         readonly ISet<Tile> _loadingTiles;
         readonly AccessOrderedCache<Tile, SKBitmap> _cache;
 
-        public TileLayer(HttpClient httpClient)
+        public TileLayer(ITileLoader tileLoader)
         {
-            _httpClient = httpClient;
+            _tileLoader = tileLoader;
             _loadingTiles = new HashSet<Tile>();
-            _cache = new AccessOrderedCache<Tile, SKBitmap>((_, bitmap) => bitmap.Dispose());
+            _cache = new AccessOrderedCache<Tile, SKBitmap>((tile, bitmap) =>
+            {
+                bitmap.Dispose();
+                _loadingTiles.Remove(tile);
+            });
         }
 
         public void DrawLayer(SKCanvas canvas, GeoConverter converter)
@@ -40,28 +42,28 @@ namespace CraigMiller.BlazorMap.Layers.Tiling
 
                     canvas.DrawBitmap(bitmap, new SKRect((float)x1, (float)y2, (float)x2, (float)y1));
                 }
-                else if (!_loadingTiles.Contains(tile))
+                else
                 {
-                    _httpClient.GetAsync($"https://tile.openstreetmap.org/{tile.Z}/{tile.X}/{tile.Y}.png").ContinueWith(t =>
+                    lock (_loadingTiles)
                     {
-                        HttpResponseMessage resp = t.Result;
-
-                        Task.Run(() =>
+                        if (_loadingTiles.Contains(tile))
                         {
-                            SKBitmap bitmap;
-                            using (Stream stream = resp.Content.ReadAsStream())
-                            {
-                                bitmap = SKBitmap.Decode(stream);
-                            }
-                            resp.Dispose();
+                            continue;
+                        }
+                        else
+                        {
+                            _loadingTiles.Add(tile);
+                        }
+                    }
 
-                            _cache.Add(tile, bitmap);
+                    _tileLoader.LoadTile(tile, default).ContinueWith(t =>
+                    {
+                        _cache.Add(tile, t.Result);
 
-                            lock (_loadingTiles)
-                            {
-                                _loadingTiles.Remove(tile);
-                            }
-                        });
+                        lock (_loadingTiles)
+                        {
+                            _loadingTiles.Remove(tile);
+                        }
                     });
                 }
             }
