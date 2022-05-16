@@ -45,6 +45,12 @@ namespace CraigMiller.BlazorMap.Engine
             return Deg2Rad(lon) * Earth.RadiusMetres;
         }
 
+        public static void LatLonToProjected(double lat, double lon, out double prjX, out double prjY)
+        {
+            prjY = LatToYM(lat);
+            prjX = LonToXM(lon);
+        }
+
         public void ToProjected(double lat, double lon, out double prjX, out double prjY)
         {
             prjY = LatToYM(lat);

@@ -82,5 +82,7 @@
         }
 
         public RectD ProjectedRect => new RectD(ProjectedX, ProjectedY, ProjectedWidth, ProjectedHeight);
+
+
     }
 }

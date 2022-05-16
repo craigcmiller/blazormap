@@ -3,26 +3,38 @@ using SkiaSharp;
 
 namespace CraigMiller.BlazorMap.Layers
 {
-    public class GridLineLayer : ILayer
+    public class GridLineLayer : ILayer, IDisposable
     {
-        public void DrawLayer(SKCanvas canvas, GeoConverter converter)
+        readonly SKPathEffect _pathEffect;
+        readonly SKPaint _gridPaint;
+
+        public GridLineLayer()
         {
-            using SKPathEffect pathEffect = SKPathEffect.CreateDash(new[] { 4f, 2f }, 0);
-            using var gridPaint = new SKPaint
+            _pathEffect = SKPathEffect.CreateDash(new[] { 4f, 2f }, 0);
+            _gridPaint = new SKPaint
             {
                 Color = SKColors.DarkGray,
                 StrokeWidth = 2f,
                 Style = SKPaintStyle.Stroke,
                 IsAntialias = true,
-                PathEffect = pathEffect
+                PathEffect = _pathEffect
             };
+        }
 
+        public void Dispose()
+        {
+            _gridPaint.Dispose();
+            _pathEffect.Dispose();
+        }
+
+        public void DrawLayer(SKCanvas canvas, GeoConverter converter)
+        {
             // Draw latitude grid lines
             for (double lat = -80; lat <= 80; lat += 10)
             {
                 converter.LatLonToCanvas(lat, 0, out _, out float cnvY);
 
-                canvas.DrawLine(0, cnvY, (float)converter.CanvasWidth, cnvY, gridPaint);
+                canvas.DrawLine(0, cnvY, (float)converter.CanvasWidth, cnvY, _gridPaint);
             }
 
             // Draw longitude grid lines
@@ -30,7 +42,7 @@ namespace CraigMiller.BlazorMap.Layers
             {
                 converter.LatLonToCanvas(0, lon, out float cnvX, out _);
 
-                canvas.DrawLine(cnvX, 0, cnvX, (float)converter.CanvasHeight, gridPaint);
+                canvas.DrawLine(cnvX, 0, cnvX, (float)converter.CanvasHeight, _gridPaint);
             }
         }
     }
