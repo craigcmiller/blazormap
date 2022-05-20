@@ -33,7 +33,7 @@
                 }
             }
 
-            return new RectD(top, left, right - left, bottom - top);
+            return new RectD(left, top, right - left, top - bottom);
         }
 
         public RectD(double x, double y, double width, double height)
@@ -53,6 +53,10 @@
         /// </summary>
         /// <param name="rect"></param>
         /// <returns></returns>
-        public bool IntersectsWith(RectD rect) => rect.X < Right && X < rect.Right && rect.Y < Bottom && Y < rect.Bottom;
+        //public bool IntersectsWith(RectD rect) => rect.X < Right && X < rect.Right && rect.Y < Bottom && Y < rect.Bottom;
+        //public bool IntersectsWith(RectD rect) => !(X > rect.Right || Right < rect.X || Y > rect.Bottom || Bottom < rect.Y);
+        public bool IntersectsWith(RectD rect) => rect.X < Right && rect.Right > X && rect.Y < Bottom && rect.Bottom > Y;
+
+        public override string ToString() => $"[{X}, {Y}, {Width}, {Height}]";
     }
 }

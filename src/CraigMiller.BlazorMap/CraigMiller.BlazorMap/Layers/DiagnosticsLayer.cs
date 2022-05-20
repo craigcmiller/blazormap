@@ -5,16 +5,22 @@ namespace CraigMiller.BlazorMap.Layers
 {
     public class DiagnosticsLayer : ILayer
     {
+        readonly SKPaint _textPaint = new SKPaint
+        {
+            Style = SKPaintStyle.Fill,
+            IsAntialias = true,
+            Color = SKColors.Black
+        };
+
         public void DrawLayer(SKCanvas canvas, GeoConverter converter)
         {
-            converter.CanvasToProjected(0, 0, out double leftPrj, out double topPrj);
-            converter.Projection.ToLatLon(leftPrj, topPrj, out double topLat, out double leftLon);
-            canvas.DrawText($"{topLat:0.00} {leftLon:0.00}", new SKPoint(20, 20), new SKPaint
-            {
-                Style = SKPaintStyle.Fill,
-                IsAntialias = true,
-                Color = SKColors.Black
-            });
+            converter.CanvasToLatLon(0, 0, out double topLat, out double leftLon);
+
+            canvas.DrawText($"{topLat:0.00} {leftLon:0.00}", new SKPoint(20, 20), _textPaint);
+
+            converter.ProjectedToCanvas(converter.ProjectedX + converter.ProjectedWidth / 2.0, converter.ProjectedY, out float x, out float y);
+            Console.WriteLine($"{x}, {y}");
+            canvas.DrawText($"PRJY", new SKPoint(x, y), _textPaint);
         }
     }
 }

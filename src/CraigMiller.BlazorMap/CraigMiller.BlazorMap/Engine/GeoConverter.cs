@@ -57,6 +57,13 @@
             canvasY = CanvasHeight - (projectedY - ProjectedY) / ProjectedHeight * CanvasHeight;
         }
 
+        public void ProjectedToCanvas(double projectedX, double projectedY, out float canvasX, out float canvasY)
+        {
+            ProjectedToCanvas(projectedX, projectedY, out double x, out double y);
+            canvasX = (float)x;
+            canvasY = (float)y;
+        }
+
         public void CanvasToProjected(double canvasX, double canvasY, out double projectedX, out double projectedY)
         {
             double xRatio = canvasX / CanvasWidth;
@@ -81,8 +88,12 @@
             canvasY = (float)canvasYD;
         }
 
+        public void CanvasToLatLon(double canvasX, double canvasY, out double lat, out double lon)
+        {
+            CanvasToProjected(canvasX, canvasY, out double prjX, out double prjY);
+            Projection.ToLatLon(prjX, prjY, out lat, out lon);
+        }
+
         public RectD ProjectedRect => new RectD(ProjectedX, ProjectedY, ProjectedWidth, ProjectedHeight);
-
-
     }
 }
