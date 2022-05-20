@@ -18,7 +18,7 @@ namespace CraigMiller.BlazorMap.Layers
 
             canvas.DrawText($"{topLat:0.00} {leftLon:0.00}", new SKPoint(20, 20), _textPaint);
 
-            converter.ProjectedToCanvas(converter.ProjectedX + converter.ProjectedWidth / 2.0, converter.ProjectedY, out float x, out float y);
+            converter.ProjectedToCanvas(converter.ProjectedLeft + converter.ProjectedWidth / 2.0, converter.ProjectedBottom, out float x, out float y);
             Console.WriteLine($"{x}, {y}");
             canvas.DrawText($"PRJY", new SKPoint(x, y), _textPaint);
         }

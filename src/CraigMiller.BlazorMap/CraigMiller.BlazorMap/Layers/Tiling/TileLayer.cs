@@ -22,7 +22,7 @@ namespace CraigMiller.BlazorMap.Layers.Tiling
 
         public void DrawLayer(SKCanvas canvas, GeoConverter converter)
         {
-            RectD projectedRect = converter.ProjectedRect;
+            ProjectedRect projectedRect = converter.ProjectedRect;
 
             int zoomLevel = Tile.GetZoomLevel(converter.Zoom, TileSize);
 
@@ -35,10 +35,10 @@ namespace CraigMiller.BlazorMap.Layers.Tiling
 
                 if (_cache.TryGetValue(tile, out SKBitmap? bitmap))
                 {
-                    RectD projected = tile.GetProjectedBounds(TileSize);
+                    ProjectedRect projected = tile.GetProjectedBounds(TileSize);
 
-                    converter.ProjectedToCanvas(projected.X, projected.Y, out double x1, out double y1);
-                    converter.ProjectedToCanvas(projected.X + projected.Width, projected.Y + projected.Height, out double x2, out double y2);
+                    converter.ProjectedToCanvas(projected.Left, projected.Bottom, out double x1, out double y1);
+                    converter.ProjectedToCanvas(projected.Left + projected.Width, projected.Bottom + projected.Height, out double x2, out double y2);
 
                     canvas.DrawBitmap(bitmap, new SKRect((float)x1, (float)y2, (float)x2, (float)y1));
                 }

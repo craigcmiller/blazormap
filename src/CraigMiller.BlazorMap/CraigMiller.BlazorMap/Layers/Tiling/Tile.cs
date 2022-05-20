@@ -60,11 +60,11 @@ namespace CraigMiller.BlazorMap.Layers.Tiling
 		/// </summary>
 		/// <param name="tileSize">Tile width and height in pixels</param>
 		/// <returns></returns>
-		public RectD GetProjectedBounds(int tileSize = 256)
+		public ProjectedRect GetProjectedBounds(int tileSize = 256)
 		{
 			double smcPerTile = GetProjectedTileSize(Z, tileSize);
 
-			return new RectD(SmcProjection.WorldMin + smcPerTile * X, SmcProjection.WorldMax - smcPerTile * (Y + 1), smcPerTile, smcPerTile);
+			return new ProjectedRect(SmcProjection.WorldMin + smcPerTile * X, SmcProjection.WorldMax - smcPerTile * (Y + 1), smcPerTile, smcPerTile);
 		}
 
 		/// <summary>
@@ -73,12 +73,12 @@ namespace CraigMiller.BlazorMap.Layers.Tiling
 		/// <param name="width">Tile width tileSize in pixels</param>
 		/// <param name="height">Tile height tileSize in pixels</param>
 		/// <returns></returns>
-		public RectD GetProjectedBounds(int width, int height)
+		public ProjectedRect GetProjectedBounds(int width, int height)
 		{
 			double smcWidthPerTile = GetProjectedTileSize(Z, width);
 			double smcHeightPerTile = GetProjectedTileSize(Z, height);
 
-			return new RectD(SmcProjection.WorldMin + smcWidthPerTile * X, SmcProjection.WorldMax - smcHeightPerTile * (Y + 1), smcWidthPerTile, smcHeightPerTile);
+			return new ProjectedRect(SmcProjection.WorldMin + smcWidthPerTile * X, SmcProjection.WorldMax - smcHeightPerTile * (Y + 1), smcWidthPerTile, smcHeightPerTile);
 		}
 
 		/// <summary>
@@ -117,7 +117,7 @@ namespace CraigMiller.BlazorMap.Layers.Tiling
 		/// <param name="zoomLevel"></param>
 		/// <param name="tileSize"></param>
 		/// <returns></returns>
-		public static IEnumerable<Tile> GetTilesInProjectedRect(RectD projectedRect, int zoomLevel, int tileSize = 256)
+		public static IEnumerable<Tile> GetTilesInProjectedRect(ProjectedRect projectedRect, int zoomLevel, int tileSize = 256)
 		{
 			double tileProjectedtileSize = GetProjectedTileSize(zoomLevel, tileSize);
 
@@ -125,10 +125,10 @@ namespace CraigMiller.BlazorMap.Layers.Tiling
 
 			const double halfWorldSmcWidth = SmcProjection.WorldWidthHeight / 2.0;
 
-			int leftTile = (int)((halfWorldSmcWidth + projectedRect.X) / tileProjectedtileSize);
-			int topTile = tilesPerLine - (int)Math.Ceiling((halfWorldSmcWidth + projectedRect.Y) / tileProjectedtileSize);
+			int leftTile = (int)((halfWorldSmcWidth + projectedRect.Left) / tileProjectedtileSize);
+			int topTile = tilesPerLine - (int)Math.Ceiling((halfWorldSmcWidth + projectedRect.Bottom) / tileProjectedtileSize);
 			int rightTile = (int)((halfWorldSmcWidth + projectedRect.Right) / tileProjectedtileSize);
-			int bottomTile = tilesPerLine - (int)Math.Ceiling((halfWorldSmcWidth + projectedRect.Bottom) / tileProjectedtileSize);
+			int bottomTile = tilesPerLine - (int)Math.Ceiling((halfWorldSmcWidth + projectedRect.Top) / tileProjectedtileSize);
 
 			for (int y = bottomTile; y <= topTile; y++)
 			{

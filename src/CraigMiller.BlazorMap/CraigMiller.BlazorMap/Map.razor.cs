@@ -54,6 +54,8 @@ namespace CraigMiller.BlazorMap
 
         public IList<ILayer> Layers => _map.Layers;
 
+        public Engine.Map Engine => _map;
+
         private void OnPaintSurface(SKPaintGLSurfaceEventArgs paintEventArgs)
         {
             //Console.WriteLine($"WV: {paintEventArgs.BackendRenderTarget.Width}, {paintEventArgs.BackendRenderTarget.Height} - {paintEventArgs.Info.Width} {paintEventArgs.Info.Height}");

@@ -11,9 +11,15 @@
 
         public IProjection Projection { get; private set; }
 
-        public double ProjectedX { get; set; }
+        /// <summary>
+        /// Gets or sets the projected X coordinate of the leftmost side of the area
+        /// </summary>
+        public double ProjectedLeft { get; set; }
 
-        public double ProjectedY { get; set; }
+        /// <summary>
+        /// Gets or sets the projected Y coordinate of the bottom of the area
+        /// </summary>
+        public double ProjectedBottom { get; set; }
 
         public double ProjectedWidth { get; set; }
 
@@ -53,8 +59,8 @@
 
         public void ProjectedToCanvas(double projectedX, double projectedY, out double canvasX, out double canvasY)
         {
-            canvasX = (projectedX - ProjectedX) / ProjectedWidth * CanvasWidth;
-            canvasY = CanvasHeight - (projectedY - ProjectedY) / ProjectedHeight * CanvasHeight;
+            canvasX = (projectedX - ProjectedLeft) / ProjectedWidth * CanvasWidth;
+            canvasY = CanvasHeight - (projectedY - ProjectedBottom) / ProjectedHeight * CanvasHeight;
         }
 
         public void ProjectedToCanvas(double projectedX, double projectedY, out float canvasX, out float canvasY)
@@ -69,8 +75,8 @@
             double xRatio = canvasX / CanvasWidth;
             double yRatio = 1.0 - canvasY / CanvasHeight;
 
-            projectedX = ProjectedX + xRatio * ProjectedWidth;
-            projectedY = ProjectedY + yRatio * ProjectedHeight;
+            projectedX = ProjectedLeft + xRatio * ProjectedWidth;
+            projectedY = ProjectedBottom + yRatio * ProjectedHeight;
         }
 
         public void LatLonToCanvas(double latitude, double longitude, out double canvasX, out double canvasY)
@@ -94,6 +100,36 @@
             Projection.ToLatLon(prjX, prjY, out lat, out lon);
         }
 
-        public RectD ProjectedRect => new RectD(ProjectedX, ProjectedY, ProjectedWidth, ProjectedHeight);
+        public void ProjectedToLatLon(double prjX, double prjY, out double lat, out double lon)
+            => Projection.ToLatLon(prjX, prjY, out lat, out lon);
+
+        public ProjectedRect ProjectedRect => new ProjectedRect(ProjectedLeft, ProjectedBottom, ProjectedWidth, ProjectedHeight);
+
+        internal PointD ProjectedCenter
+        {
+            get => new PointD(ProjectedLeft + ProjectedWidth / 2.0, ProjectedBottom + ProjectedHeight / 2.0);
+            set
+            {
+                ProjectedLeft = value.X - ProjectedWidth / 2.0;
+                ProjectedBottom = value.Y - ProjectedHeight / 2.0;
+            }
+        }
+
+        internal Location CenterLocation
+        {
+            get
+            {
+                PointD prjCenter = ProjectedCenter;
+                ProjectedToLatLon(prjCenter.X, prjCenter.Y, out double lat, out double lon);
+
+                return new Location(lat, lon);
+            }
+            set
+            {
+                Projection.ToProjected(value.Latitude, value.Longitude, out double prjX, out double prjY);
+
+                ProjectedCenter = new PointD(prjX, prjY);
+            }
+        }
     }
 }

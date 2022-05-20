@@ -35,18 +35,20 @@ namespace CraigMiller.BlazorMap.Layers
 
         public void DrawLayer(SKCanvas canvas, GeoConverter converter)
         {
-            RectD projectedRect = converter.ProjectedRect;
+            ProjectedRect projectedRect = converter.ProjectedRect;
 
-            SKPoint a = converter.ProjectedToCanvas(projectedRect.X, projectedRect.Y);
-            canvas.DrawCircle(a.X, a.Y, 4f, _boundsPaint);
+            SKPoint a = converter.ProjectedToCanvas(projectedRect.Left, projectedRect.Bottom);
+            SKPoint b = converter.ProjectedToCanvas(projectedRect.Left, projectedRect.Bottom + projectedRect.Height);
+            canvas.DrawCircle(a.X + 10f, a.Y, 6f, _boundsPaint);
+            canvas.DrawCircle(b.X + 20f, b.Y, 6f, _boundsPaint);
 
             using var path = new SKPath();
 
             foreach (Polygon<TTag> polygon in _polygons)
             {
-                if ((ShouldRender is null || ShouldRender(polygon)) && projectedRect.IntersectsWith(polygon.Bounds))
+                if (projectedRect.IntersectsWith(polygon.Bounds) && (ShouldRender is null || ShouldRender(polygon)))
                 {
-                    RenderBounds(polygon.Bounds, canvas, converter);
+                    //RenderBounds(polygon.Bounds, canvas, converter);
 
                     SKPoint[] canvasPoints = converter.ProjectedToCanvas(polygon.ProjectedPoints);
 
@@ -60,14 +62,14 @@ namespace CraigMiller.BlazorMap.Layers
             }
         }
 
-        void RenderBounds(RectD bounds, SKCanvas canvas, GeoConverter converter)
+        void RenderBounds(ProjectedRect bounds, SKCanvas canvas, GeoConverter converter)
         {
-            SKPoint a = converter.ProjectedToCanvas(bounds.X, bounds.Y);
-            SKPoint b = converter.ProjectedToCanvas(bounds.Right, bounds.Bottom);
+            SKPoint a = converter.ProjectedToCanvas(bounds.Left, bounds.Bottom);
+            SKPoint b = converter.ProjectedToCanvas(bounds.Right, bounds.Top);
 
             canvas.DrawCircle(a.X, a.Y, 4f, _boundsPaint);
 
-            canvas.DrawRect(a.X, a.Y, b.X - a.X, a.Y - b.Y, _boundsPaint);
+            canvas.DrawRect(a.X, a.Y, b.X - a.X, b.Y - a.Y, _boundsPaint);
         }
 
         public void AddPolygon(IEnumerable<Location> points, TTag? tag = default)
@@ -83,7 +85,7 @@ namespace CraigMiller.BlazorMap.Layers
 
     public readonly struct Polygon<T>
     {
-        public readonly RectD Bounds;
+        public readonly ProjectedRect Bounds;
         public readonly PointD[] ProjectedPoints;
         public readonly T? Tag;
 
@@ -102,7 +104,7 @@ namespace CraigMiller.BlazorMap.Layers
         public Polygon(PointD[] projectedPoints, T? tag = default)
         {
             ProjectedPoints = projectedPoints;
-            Bounds = RectD.BoundingPoints(projectedPoints);
+            Bounds = ProjectedRect.BoundingPoints(projectedPoints);
             Tag = tag;
         }
     }

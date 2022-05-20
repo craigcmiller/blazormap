@@ -13,8 +13,8 @@ namespace CraigMiller.BlazorMap.Engine
         {
             _areaView = new GeoConverter(new SmcProjection())
             {
-                ProjectedX = SmcProjection.WorldMin,
-                ProjectedY = SmcProjection.WorldMin,
+                ProjectedLeft = SmcProjection.WorldMin,
+                ProjectedBottom = SmcProjection.WorldMin,
                 Zoom = 0.0001
             };
 
@@ -58,8 +58,8 @@ namespace CraigMiller.BlazorMap.Engine
                 _areaView.CanvasToProjected(0d, 0d, out double projectedLeft, out double projectedTop);
                 _areaView.CanvasToProjected(xDiff, yDiff, out double projectedDiffX, out double projectedDiffY);
 
-                _areaView.ProjectedX -= projectedDiffX - projectedLeft;
-                _areaView.ProjectedY -= projectedDiffY - projectedTop;
+                _areaView.ProjectedLeft -= projectedDiffX - projectedLeft;
+                _areaView.ProjectedBottom -= projectedDiffY - projectedTop;
 
                 //const currentDragTime = (new Date()).getTime();
 
@@ -92,8 +92,20 @@ namespace CraigMiller.BlazorMap.Engine
             _areaView.CanvasToProjected(x, y, out double offsetPrjX, out double offsetPrjY);
 
             // Move the projected position to keep the mouse position at the same location
-            _areaView.ProjectedX += projectedMouseX - offsetPrjX;
-            _areaView.ProjectedY += projectedMouseY - offsetPrjY;
+            _areaView.ProjectedLeft += projectedMouseX - offsetPrjX;
+            _areaView.ProjectedBottom += projectedMouseY - offsetPrjY;
+        }
+
+        public Location Center
+        {
+            get => _areaView.CenterLocation;
+            set => _areaView.CenterLocation = value;
+        }
+
+        public double Zoom
+        {
+            get => _areaView.Zoom;
+            set => _areaView.Zoom = value;
         }
     }
 }

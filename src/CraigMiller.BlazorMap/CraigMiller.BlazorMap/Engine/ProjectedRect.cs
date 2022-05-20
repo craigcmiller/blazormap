@@ -1,15 +1,18 @@
 ﻿namespace CraigMiller.BlazorMap.Engine
 {
-    public readonly struct RectD
+    /// <summary>
+    /// A rectangle in projected coordinate system
+    /// </summary>
+    public readonly struct ProjectedRect
     {
-        public readonly double X, Y, Width, Height;
+        public readonly double Left, Bottom, Width, Height;
 
         /// <summary>
-        /// Creates a rect that contains all points in <paramref name="points"/>
+        /// Creates a rect that encompasses all points in <paramref name="points"/>
         /// </summary>
         /// <param name="points"></param>
         /// <returns></returns>
-        public static RectD BoundingPoints(PointD[] points)
+        public static ProjectedRect BoundingPoints(PointD[] points)
         {
             double top = points[0].Y, bottom = top, left = points[0].X, right = left;
             for (int i = 1; i < points.Length; i++)
@@ -33,30 +36,28 @@
                 }
             }
 
-            return new RectD(left, top, right - left, top - bottom);
+            return new ProjectedRect(left, bottom, right - left, top - bottom);
         }
 
-        public RectD(double x, double y, double width, double height)
+        public ProjectedRect(double left, double bottom, double width, double height)
         {
-            X = x;
-            Y = y;
+            Left = left;
+            Bottom = bottom;
             Width = width;
             Height = height;
         }
 
-        public double Right => X + Width;
+        public double Right => Left + Width;
 
-        public double Bottom => Y + Height;
+        public double Top => Bottom + Height;
 
         /// <summary>
         /// Gets if this rect intersects with <paramref name="rect"/>
         /// </summary>
         /// <param name="rect"></param>
         /// <returns></returns>
-        //public bool IntersectsWith(RectD rect) => rect.X < Right && X < rect.Right && rect.Y < Bottom && Y < rect.Bottom;
-        //public bool IntersectsWith(RectD rect) => !(X > rect.Right || Right < rect.X || Y > rect.Bottom || Bottom < rect.Y);
-        public bool IntersectsWith(RectD rect) => rect.X < Right && rect.Right > X && rect.Y < Bottom && rect.Bottom > Y;
+        public bool IntersectsWith(ProjectedRect rect) => rect.Left < Right && rect.Right > Left && rect.Bottom < Top && rect.Top > Bottom;
 
-        public override string ToString() => $"[{X}, {Y}, {Width}, {Height}]";
+        public override string ToString() => $"[{Left}, {Bottom}, {Width}, {Height}]";
     }
 }
