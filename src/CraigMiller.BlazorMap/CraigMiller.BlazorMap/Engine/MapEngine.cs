@@ -2,14 +2,14 @@
 
 namespace CraigMiller.BlazorMap.Engine
 {
-    public class Map
+    public class MapEngine
     {
         private readonly GeoConverter _areaView;
         private bool _isDragging;
         private PointD _previousMousePosition;
         private DateTime _previousMouseDragTime;
 
-        public Map()
+        public MapEngine()
         {
             _areaView = new GeoConverter(new SmcProjection())
             {
@@ -18,18 +18,23 @@ namespace CraigMiller.BlazorMap.Engine
                 Zoom = 0.0001
             };
 
-            Layers = new List<ILayer>();
+            Layers = new List<RenderableLayer>();
         }
 
         public GeoConverter AreaView => _areaView;
 
-        public IList<ILayer> Layers { get; }
+        public IList<RenderableLayer> Layers { get; }
+
+        public void AddLayer(ILayer layer) => Layers.Add(new RenderableLayer(layer));
 
         public void Paint(SKCanvas canvas)
         {
-            foreach (ILayer layer in Layers)
+            foreach (RenderableLayer renderableLayer in Layers)
             {
-                layer.DrawLayer(canvas, _areaView);
+                if (renderableLayer.ShouldRender)
+                {
+                    renderableLayer.Layer.DrawLayer(canvas, _areaView);
+                }
             }
         }
 

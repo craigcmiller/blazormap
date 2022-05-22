@@ -13,11 +13,11 @@ namespace CraigMiller.BlazorMap
     {
         private SKGLView? _view;
         private readonly string _id = $"{nameof(Map).ToLower()}_{Guid.NewGuid().ToString().Replace("-", "")}";
-        private readonly Engine.Map _map;
+        private readonly MapEngine _map;
 
         public Map()
         {
-            _map = new Engine.Map();
+            _map = new MapEngine();
         }
 
         protected override async Task OnInitializedAsync()
@@ -32,13 +32,13 @@ namespace CraigMiller.BlazorMap
 
         private void AddMapLayers()
         {
-            _map.Layers.Add(new BackgroundFillLayer());
+            _map.AddLayer(new BackgroundFillLayer());
 
-            _map.Layers.Add(new TileLayer(new HttpTileLoader(HttpClient!)));
+            _map.AddLayer(new TileLayer(new HttpTileLoader(HttpClient!)));
 
-            _map.Layers.Add(new GridLineLayer());
+            _map.AddLayer(new GridLineLayer());
 
-            _map.Layers.Add(new CircleMarkerLayer
+            _map.AddLayer(new CircleMarkerLayer
             {
                 Locations = new List<Location> {
                     new Location(51,0),
@@ -49,12 +49,10 @@ namespace CraigMiller.BlazorMap
                 }
             });
 
-            _map.Layers.Add(new DiagnosticsLayer());
+            _map.AddLayer(new DiagnosticsLayer());
         }
 
-        public IList<ILayer> Layers => _map.Layers;
-
-        public Engine.Map Engine => _map;
+        public MapEngine Engine => _map;
 
         private void OnPaintSurface(SKPaintGLSurfaceEventArgs paintEventArgs)
         {
