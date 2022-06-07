@@ -1,4 +1,6 @@
-﻿namespace CraigMiller.BlazorMap.Engine
+﻿using CraigMiller.BlazorMap.Layers.Tiling;
+
+namespace CraigMiller.BlazorMap.Engine
 {
     public class GeoConverter
     {
@@ -105,6 +107,19 @@
 
         public ProjectedRect ProjectedRect => new ProjectedRect(ProjectedLeft, ProjectedBottom, ProjectedWidth, ProjectedHeight);
 
+        public GeoRect GeoRect
+        {
+            get
+            {
+                ProjectedRect pr = ProjectedRect;
+
+                ProjectedToLatLon(ProjectedLeft, ProjectedBottom + ProjectedHeight, out double northLat, out double westLon);
+                ProjectedToLatLon(ProjectedLeft + ProjectedWidth, ProjectedBottom, out double southLat, out double eastLon);
+
+                return new GeoRect(northLat, westLon, southLat, eastLon);
+            }
+        }
+
         internal PointD ProjectedCenter
         {
             get => new PointD(ProjectedLeft + ProjectedWidth / 2.0, ProjectedBottom + ProjectedHeight / 2.0);
@@ -131,5 +146,10 @@
                 ProjectedCenter = new PointD(prjX, prjY);
             }
         }
+
+        /// <summary>
+        /// Gets the closest OSM zoom level
+        /// </summary>
+        public int OsmZoomLevel => Tile.GetZoomLevel(Zoom);
     }
 }
