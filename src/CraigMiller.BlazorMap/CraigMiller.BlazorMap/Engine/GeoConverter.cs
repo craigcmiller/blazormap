@@ -6,12 +6,30 @@ namespace CraigMiller.BlazorMap.Engine
     {
         double _canvasWidth, _canvasHeight, _zoom;
 
-        public GeoConverter(IProjection projection)
+        public GeoConverter()
         {
-            Projection = projection;
         }
 
-        public IProjection Projection { get; private set; }
+        public GeoConverter(double projectedLeft, double projectedBottom, double canvasWidth, double canvasHeight, double zoom)
+        {
+            ProjectedLeft = projectedLeft;
+            ProjectedBottom = projectedBottom;
+            _canvasWidth = canvasWidth;
+            _canvasHeight = canvasHeight;
+            Zoom = zoom;
+        }
+
+        public GeoConverter Clone() =>
+            new GeoConverter
+            {
+                ProjectedLeft = ProjectedLeft,
+                ProjectedBottom = ProjectedBottom,
+                Zoom = Zoom,
+                CanvasWidth = CanvasWidth,
+                CanvasHeight = CanvasHeight
+            };
+
+        public IProjection Projection { get; } = new SmcProjection();
 
         /// <summary>
         /// Gets or sets the projected X coordinate of the leftmost side of the area
@@ -23,9 +41,9 @@ namespace CraigMiller.BlazorMap.Engine
         /// </summary>
         public double ProjectedBottom { get; set; }
 
-        public double ProjectedWidth { get; set; }
+        public double ProjectedWidth { get; private set; }
 
-        public double ProjectedHeight { get; set; }
+        public double ProjectedHeight { get; private set; }
 
         public double Zoom
         {

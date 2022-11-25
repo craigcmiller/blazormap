@@ -8,6 +8,7 @@ namespace CraigMiller.BlazorMap.Layers.Tiling
         readonly ITileLoader _tileLoader;
         readonly ISet<Tile> _loadingTiles;
         readonly AccessOrderedCache<Tile, SKBitmap> _cache;
+        readonly SKPaint _paint;
 
         public TileLayer(ITileLoader tileLoader)
         {
@@ -18,6 +19,11 @@ namespace CraigMiller.BlazorMap.Layers.Tiling
                 bitmap.Dispose();
                 _loadingTiles.Remove(tile);
             });
+            _paint = new SKPaint
+            {
+                //IsAntialias = true,
+                //FilterQuality = SKFilterQuality.High,
+            };
         }
 
         public void DrawLayer(SKCanvas canvas, GeoConverter converter)
@@ -40,7 +46,7 @@ namespace CraigMiller.BlazorMap.Layers.Tiling
                     converter.ProjectedToCanvas(projected.Left, projected.Bottom, out double x1, out double y1);
                     converter.ProjectedToCanvas(projected.Left + projected.Width, projected.Bottom + projected.Height, out double x2, out double y2);
 
-                    canvas.DrawBitmap(bitmap, new SKRect((float)x1, (float)y2, (float)x2, (float)y1));
+                    canvas.DrawBitmap(bitmap, new SKRect((float)x1, (float)y2, (float)x2, (float)y1), _paint);
                 }
                 else
                 {

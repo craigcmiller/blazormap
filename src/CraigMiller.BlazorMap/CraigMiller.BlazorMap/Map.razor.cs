@@ -6,14 +6,15 @@ using Microsoft.AspNetCore.Components.Web;
 using CraigMiller.BlazorMap.Engine;
 using CraigMiller.BlazorMap.Layers;
 using CraigMiller.BlazorMap.Layers.Tiling;
+using System.Text.Json;
 
 namespace CraigMiller.BlazorMap
 {
     public partial class Map
     {
-        private SKGLView? _view;
-        private readonly string _id = $"{nameof(Map).ToLower()}_{Guid.NewGuid().ToString().Replace("-", "")}";
-        private readonly MapEngine _map;
+        SKGLView? _view;
+        readonly string _id = $"{nameof(Map).ToLower()}_{Guid.NewGuid().ToString().Replace("-", "")}";
+        readonly MapEngine _map;
 
         public Map()
         {
@@ -52,6 +53,22 @@ namespace CraigMiller.BlazorMap
             _map.AddLayer(new DiagnosticsLayer());
         }
 
+        public void AddMapLayer(ILayer layer) => _map.AddLayer(layer);
+
+        public async Task AddAsyncRenderMapLayer(params ILayer[] layers)
+        {
+            try
+            {
+                var asyncLayer = new AsynchronousLayer(layers);
+
+                AddMapLayer(asyncLayer);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+        }
+
         public MapEngine Engine => _map;
 
         private void OnPaintSurface(SKPaintGLSurfaceEventArgs paintEventArgs)
@@ -65,7 +82,7 @@ namespace CraigMiller.BlazorMap
             //canvas.Scale(paintEventArgs.BackendRenderTarget.Width / paintEventArgs.Info.Width, paintEventArgs.BackendRenderTarget.Height / paintEventArgs.Info.Height);
             //canvas.Scale(paintEventArgs.Info.Width / paintEventArgs.BackendRenderTarget.Width, paintEventArgs.Info.Height / paintEventArgs.BackendRenderTarget.Height);
 
-            _map.Paint(canvas);
+            _map.Draw(canvas);
         }
 
         private void OnMouseDown(MouseEventArgs args)

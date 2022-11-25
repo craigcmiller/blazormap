@@ -17,19 +17,22 @@ namespace CraigMiller.BlazorMap.Layers
             _fillPaint = new SKPaint
             {
                 Style = SKPaintStyle.Fill,
-                Color = new SKColor(220, 180, 180, 100)
+                Color = new SKColor(220, 180, 180, 100),
+                IsAntialias = true,
             };
             _linePaint = new SKPaint
             {
                 Style = SKPaintStyle.Stroke,
                 Color = new SKColor(20, 20, 20, 230),
-                StrokeWidth = 1f
+                StrokeWidth = 1f,
+                IsAntialias = true,
             };
             _boundsPaint = new SKPaint
             {
                 Style = SKPaintStyle.Stroke,
                 Color = SKColors.Red,
-                StrokeWidth = 1f
+                StrokeWidth = 1f,
+                IsAntialias = true,
             };
         }
 

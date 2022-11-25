@@ -1,5 +1,8 @@
 ﻿namespace CraigMiller.BlazorMap.Engine
 {
+    /// <summary>
+    /// Geographic rectangle bounded by north, west, south and east latitudes and longitudes
+    /// </summary>
     public readonly struct GeoRect
     {
         public readonly double NorthLatitude, SouthLatitude, EastLongitude, WestLongitude;
@@ -32,5 +35,8 @@
 
             return new GeoRect(northLat, westLon, southLat, eastLon);
         }
+
+        public override string ToString() =>
+            $"{NorthLatitude} {WestLongitude}, {SouthLatitude} {EastLongitude}";
     }
 }
