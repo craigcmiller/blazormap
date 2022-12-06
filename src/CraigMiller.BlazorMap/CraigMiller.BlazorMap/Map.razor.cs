@@ -25,19 +25,22 @@ namespace CraigMiller.BlazorMap
         {
             base.OnInitialized();
 
-            AddMapLayers();
-
             await using MapJsInterop mapJsInterop = new(JSRuntime!);
             await mapJsInterop.FitToContainer(_id);
         }
 
-        private void AddMapLayers()
+        public void AddDefaultLayers()
         {
             _map.AddLayer(new BackgroundFillLayer());
 
             _map.AddLayer(new TileLayer(new HttpTileLoader(HttpClient!)));
 
             _map.AddLayer(new GridLineLayer());
+        }
+
+        public void AddDebugLayers()
+        {
+            AddDefaultLayers();
 
             _map.AddLayer(new CircleMarkerLayer
             {
