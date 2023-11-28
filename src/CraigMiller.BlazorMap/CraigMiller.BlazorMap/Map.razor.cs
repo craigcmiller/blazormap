@@ -9,15 +9,15 @@ using CraigMiller.BlazorMap.Layers.Tiling;
 
 namespace CraigMiller.BlazorMap;
 
-public partial class Map
+public partial class Map : ComponentBase
 {
     SKGLView? _view;
     readonly string _id = $"{nameof(Map).ToLower()}_{Guid.NewGuid().ToString().Replace("-", "")}";
-    readonly MapEngine _map;
+    readonly MapEngine _engine;
 
     public Map()
     {
-        _map = new MapEngine();
+        _engine = new MapEngine();
     }
 
     protected override async Task OnInitializedAsync()
@@ -30,17 +30,17 @@ public partial class Map
 
     public void AddDefaultLayers()
     {
-        _map.AddLayer(new BackgroundFillLayer());
-        _map.AddLayer(new TileLayer(new HttpTileLoader(HttpClient!)));
-        _map.AddLayer(new GridLineLayer());
-        _map.AddLayer(new ScaleLayer());
+        _engine.AddLayer(new BackgroundFillLayer());
+        _engine.AddLayer(new TileLayer(new HttpTileLoader(HttpClient!)));
+        _engine.AddLayer(new GridLineLayer());
+        _engine.AddLayer(new ScaleLayer());
     }
 
     public void AddDebugLayers()
     {
         AddDefaultLayers();
 
-        _map.AddLayer(new CircleMarkerLayer
+        _engine.AddLayer(new CircleMarkerLayer
         {
             Locations = new List<Location> {
                 new Location(51,0),
@@ -51,10 +51,10 @@ public partial class Map
             }
         });
 
-        _map.AddLayer(new DiagnosticsLayer());
+        _engine.AddLayer(new DiagnosticsLayer());
     }
 
-    public void AddMapLayer(ILayer layer) => _map.AddLayer(layer);
+    public void AddMapLayer(ILayer layer) => _engine.AddLayer(layer);
 
     public async Task AddAsyncRenderMapLayer(params ILayer[] layers)
     {
@@ -70,20 +70,22 @@ public partial class Map
         }
     }
 
-    public MapEngine Engine => _map;
+    public MapEngine Engine => _engine;
 
     private void OnPaintSurface(SKPaintGLSurfaceEventArgs paintEventArgs)
     {
         //Console.WriteLine($"WV: {paintEventArgs.BackendRenderTarget.Width}, {paintEventArgs.BackendRenderTarget.Height} - {paintEventArgs.Info.Width} {paintEventArgs.Info.Height}");
 
-        _map.AreaView.CanvasWidth = paintEventArgs.Info.Width;
-        _map.AreaView.CanvasHeight = paintEventArgs.Info.Height;
+        _engine.AreaView.CanvasWidth = paintEventArgs.Info.Width;
+        _engine.AreaView.CanvasHeight = paintEventArgs.Info.Height;
 
         SKCanvas canvas = paintEventArgs.Surface.Canvas;
         //canvas.Scale(paintEventArgs.BackendRenderTarget.Width / paintEventArgs.Info.Width, paintEventArgs.BackendRenderTarget.Height / paintEventArgs.Info.Height);
         //canvas.Scale(paintEventArgs.Info.Width / paintEventArgs.BackendRenderTarget.Width, paintEventArgs.Info.Height / paintEventArgs.BackendRenderTarget.Height);
 
-        _map.Draw(canvas);
+        _engine.InertialPanUpdateScene();
+
+        _engine.Draw(canvas);
     }
 
     private void OnMouseDown(MouseEventArgs args)
@@ -91,14 +93,14 @@ public partial class Map
         switch (args.Button)
         {
             case 0:
-                _map.PrimaryMouseDown(args.OffsetX, args.OffsetY);
+                _engine.PrimaryMouseDown(args.OffsetX, args.OffsetY);
                 break;
         }
     }
 
     private void OnMouseUp(MouseEventArgs args)
     {
-        _map.PrimaryMouseUp();
+        _engine.PrimaryMouseUp(args.OffsetX, args.OffsetY);
     }
 
     private void OnMouseMove(MouseEventArgs args)
@@ -107,13 +109,13 @@ public partial class Map
 
         if (args.Button == 0)
         {
-            _map.PrimaryMouseMove(args.OffsetX, args.OffsetY);
+            _engine.PrimaryMouseMove(args.OffsetX, args.OffsetY);
         }
     }
 
     private void OnMouseWheel(WheelEventArgs args)
     {
-        _map.ZoomOn(args.OffsetX, args.OffsetY, -args.DeltaY / 240d / 20d);
+        _engine.ZoomOn(args.OffsetX, args.OffsetY, -args.DeltaY / 240d / 10d);
     }
 
     [Inject]
@@ -121,4 +123,7 @@ public partial class Map
 
     [Inject]
     public IJSRuntime? JSRuntime { get; set; }
+
+    [Parameter]
+    public string? Style { get; set; }
 }

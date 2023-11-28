@@ -1,4 +1,4 @@
-using CraigMiller.BlazorMap.ExampleApp;
+using CraigMiller.BlazorMap.Example;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 

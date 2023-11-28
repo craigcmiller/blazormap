@@ -1,13 +1,19 @@
-﻿namespace CraigMiller.BlazorMap.Engine
+﻿using System.Threading;
+
+namespace CraigMiller.BlazorMap.Engine
 {
     /// <summary>
     /// Canvas renderer with mouse interaction
     /// </summary>
     public class MapEngine : CanvasRenderer
     {
-        private bool _isDragging;
-        private PointD _previousMousePosition;
-        private DateTime _previousMouseDragTime;
+        bool _isDragging;
+        PanPosition _lastMousePosition, _lastMousePositionForInertiaCalculation;
+        bool _isInertialPanning;
+        DateTime _lastInertialPanUpdate;
+        double _inertialXPerSecond, _inertialYPerSecond;
+
+        record struct PanPosition(double X, double Y, DateTime Timestamp);
 
         public MapEngine()
         {
@@ -15,42 +21,58 @@
 
         public void PrimaryMouseDown(double x, double y)
         {
+            _isInertialPanning = false;
             _isDragging = true;
-            _previousMousePosition = new PointD(x, y);
-            _previousMouseDragTime = DateTime.UtcNow;
+            _lastMousePosition = _lastMousePositionForInertiaCalculation = new PanPosition(x, y, DateTime.UtcNow);
         }
 
-        public void PrimaryMouseUp()
+        public void PrimaryMouseUp(double x, double y)
         {
             _isDragging = false;
+
+            double secondsDelta = (DateTime.UtcNow - _lastMousePosition.Timestamp).TotalSeconds;
+
+            if (secondsDelta < 0.02 && (Math.Abs(_inertialXPerSecond) > 0.1 || Math.Abs(_inertialYPerSecond) > 0.1))
+            {
+                _isInertialPanning = true;
+                _lastInertialPanUpdate = _lastMousePosition.Timestamp;
+
+                _inertialXPerSecond *= 0.5;
+                _inertialYPerSecond *= 0.5;
+            }
         }
 
-        public void PrimaryMouseMove(double x, double y)
+        public void PrimaryMouseMove(double mouseX, double mouseY)
         {
             if (_isDragging)
             {
-                double mouseX = x;
-                double mouseY = y;
+                double xDiff = mouseX - _lastMousePosition.X;
+                double yDiff = mouseY - _lastMousePosition.Y;
 
-                double xDiff = mouseX - _previousMousePosition.X;
-                double yDiff = mouseY - _previousMousePosition.Y;
+                AreaView.MoveBy(xDiff, yDiff);
 
-                AreaView.CanvasToProjected(0d, 0d, out double projectedLeft, out double projectedTop);
-                AreaView.CanvasToProjected(xDiff, yDiff, out double projectedDiffX, out double projectedDiffY);
+                DateTime now = DateTime.UtcNow;
 
-                AreaView.ProjectedLeft -= projectedDiffX - projectedLeft;
-                AreaView.ProjectedBottom -= projectedDiffY - projectedTop;
+                UpdateInertialPanSpeed(mouseX, mouseY, now);
 
-                //const currentDragTime = (new Date()).getTime();
+                _lastMousePosition = new PanPosition(mouseX, mouseY, now);
+            }
+        }
 
-                //const dragTimeDelta = (currentDragTime - this.previousMouseDragTime) / 1000.0 * this.inertialFramePerSec;
+        private void UpdateInertialPanSpeed(double mouseX, double mouseY, DateTime now)
+        {
+            double secondsDelta = (now - _lastMousePositionForInertiaCalculation.Timestamp).TotalSeconds;
+            double xDelta = mouseX - _lastMousePositionForInertiaCalculation.X;
+            double yDelta = mouseY - _lastMousePositionForInertiaCalculation.Y;
 
-                // Store mouse deltas for inertial pan
-                //this.inertialX = (mousePosition.x - this.previousMousePosition.x) * dragTimeDelta;
-                //this.inertialY = (mousePosition.y - this.previousMousePosition.y) * dragTimeDelta;
+            _inertialXPerSecond = xDelta / secondsDelta;
+            _inertialYPerSecond = yDelta / secondsDelta;
 
-                _previousMousePosition = new PointD(mouseX, mouseY);
-                //_previousMouseDragTime = currentDragTime;
+            //Console.WriteLine($"{_inertialXPerSecond}, {_inertialYPerSecond}, {secondsDelta}, {xDelta}, {yDelta}");
+
+            if ((now - _lastMousePositionForInertiaCalculation.Timestamp).TotalSeconds > 0.05)
+            {
+                _lastMousePositionForInertiaCalculation = _lastMousePosition;
             }
         }
 
@@ -74,6 +96,26 @@
             // Move the projected position to keep the mouse position at the same location
             AreaView.ProjectedLeft += projectedMouseX - offsetPrjX;
             AreaView.ProjectedBottom += projectedMouseY - offsetPrjY;
+        }
+
+        public void InertialPanUpdateScene()
+        {
+            if (_isInertialPanning)
+            {
+                DateTime now = DateTime.UtcNow;
+                double secondsSinceLastPan = (now - _lastInertialPanUpdate).TotalSeconds;
+
+                AreaView.MoveBy(_inertialXPerSecond * secondsSinceLastPan, _inertialYPerSecond * secondsSinceLastPan);
+
+                _inertialXPerSecond *= 0.9;
+                _inertialYPerSecond *= 0.9;
+
+                if (Math.Abs(_inertialXPerSecond) < 0.1 && Math.Abs(_inertialYPerSecond) < 0.1)
+                {
+                    _isInertialPanning = false;
+                    _lastInertialPanUpdate = now;
+                }
+            }
         }
     }
 }

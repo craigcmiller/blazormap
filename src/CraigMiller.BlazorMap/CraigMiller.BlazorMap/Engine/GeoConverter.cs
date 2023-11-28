@@ -169,5 +169,19 @@ namespace CraigMiller.BlazorMap.Engine
         /// Gets the closest OSM zoom level
         /// </summary>
         public int OsmZoomLevel => Tile.GetZoomLevel(Zoom);
+
+        /// <summary>
+        /// Move the visible canvas by an X and Y amount
+        /// </summary>
+        /// <param name="xMove"></param>
+        /// <param name="yMove"></param>
+        public void MoveBy(double xMove, double yMove)
+        {
+            CanvasToProjected(0d, 0d, out double projectedLeft, out double projectedTop);
+            CanvasToProjected(xMove, yMove, out double projectedDiffX, out double projectedDiffY);
+
+            ProjectedLeft -= projectedDiffX - projectedLeft;
+            ProjectedBottom -= projectedDiffY - projectedTop;
+        }
     }
 }

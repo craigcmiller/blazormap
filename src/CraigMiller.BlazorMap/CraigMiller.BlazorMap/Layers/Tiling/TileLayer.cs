@@ -56,10 +56,8 @@ namespace CraigMiller.BlazorMap.Layers.Tiling
                         {
                             continue;
                         }
-                        else
-                        {
-                            _loadingTiles.Add(tile);
-                        }
+
+                        _loadingTiles.Add(tile);
                     }
 
                     _tileLoader.LoadTile(tile, default).ContinueWith(t =>
