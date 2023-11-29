@@ -1,4 +1,4 @@
-﻿using System.Threading;
+﻿using CraigMiller.BlazorMap.Animation;
 
 namespace CraigMiller.BlazorMap.Engine
 {
@@ -9,9 +9,8 @@ namespace CraigMiller.BlazorMap.Engine
     {
         bool _isDragging;
         PanPosition _lastMousePosition, _lastMousePositionForInertiaCalculation;
-        bool _isInertialPanning;
-        DateTime _lastInertialPanSetTime, _lastInertialPanUpdate;
-        double _inertialXPerSecond, _inertialYPerSecond;
+        MapAnimation? _activeAnimation;
+        readonly Queue<MapAnimation> _animations = new Queue<MapAnimation>();
 
         record struct PanPosition(double X, double Y, DateTime Timestamp);
 
@@ -21,15 +20,22 @@ namespace CraigMiller.BlazorMap.Engine
 
         public void PrimaryMouseDown(double x, double y)
         {
-            _isInertialPanning = false;
             _isDragging = true;
             _lastMousePosition = _lastMousePositionForInertiaCalculation = new PanPosition(x, y, DateTime.UtcNow);
+
+            _activeAnimation = null;
+            _animations.Clear();
         }
 
         public void PrimaryMouseUp(double x, double y)
         {
             _isDragging = false;
 
+            CreateInertialPanAnimation(x, y);
+        }
+
+        private void CreateInertialPanAnimation(double x, double y)
+        {
             DateTime now = DateTime.UtcNow;
 
             double secondsSinceLastMouseMove = (now - _lastMousePosition.Timestamp).TotalSeconds;
@@ -41,13 +47,13 @@ namespace CraigMiller.BlazorMap.Engine
 
                 double secondsSinceLastPanRecord = (now - _lastMousePositionForInertiaCalculation.Timestamp).TotalSeconds;
 
-                _inertialXPerSecond = xDelta / secondsSinceLastPanRecord;
-                _inertialYPerSecond = yDelta / secondsSinceLastPanRecord;
+                double inertialXPerSecond = xDelta / secondsSinceLastPanRecord;
+                double inertialYPerSecond = yDelta / secondsSinceLastPanRecord;
 
-                if (Math.Abs(_inertialXPerSecond) > 0.1 || Math.Abs(_inertialYPerSecond) > 0.1)
+                if (Math.Abs(inertialXPerSecond) > 0.1 || Math.Abs(inertialYPerSecond) > 0.1)
                 {
-                    _isInertialPanning = true;
-                    _lastInertialPanUpdate = _lastInertialPanSetTime = now;
+                    _activeAnimation = new PanAnimation(inertialXPerSecond, inertialYPerSecond, InertialPanDuration);
+                    _activeAnimation.BeginAnimation(now);
                 }
             }
         }
@@ -99,37 +105,33 @@ namespace CraigMiller.BlazorMap.Engine
             AreaView.ProjectedBottom += projectedMouseY - offsetPrjY;
         }
 
-        public void InertialPanUpdateScene()
+        public void UpdateAnimations()
         {
-            if (_isInertialPanning)
+            if (_activeAnimation is null)
             {
-                DateTime now = DateTime.UtcNow;
-                double secondsSinceLastPan = (now - _lastInertialPanSetTime).TotalSeconds;
-                double ratioOfPan = 1.0 - (secondsSinceLastPan / InertialPanPeriod.TotalSeconds);
+                return;
+            }
 
-                // If ratio of pan is under zero then stop the pan
-                if (ratioOfPan < 0.0)
+            DateTime now = DateTime.UtcNow;
+
+            if (_activeAnimation.Update(AreaView, now))
+            {
+                if (_animations.TryDequeue(out _activeAnimation))
                 {
-                    _isInertialPanning = false;
-                    _lastInertialPanSetTime = now;
-                }
-                else
-                {
-                    double secondsSinceLastSceneUpdate = (now - _lastInertialPanUpdate).TotalSeconds;
-
-                    double moveXBy = _inertialXPerSecond * secondsSinceLastSceneUpdate * ratioOfPan;
-                    double moveYBy = _inertialYPerSecond * secondsSinceLastSceneUpdate * ratioOfPan;
-
-                    AreaView.MoveBy(moveXBy, moveYBy);
-
-                    _lastInertialPanUpdate = now;
+                    _activeAnimation.BeginAnimation(now);
                 }
             }
         }
 
         /// <summary>
+        /// Enqueues an animation to be executed after all current animations have completed
+        /// </summary>
+        /// <param name="animation"></param>
+        public void EnqueueAnimation(MapAnimation animation) => _animations.Enqueue(animation);
+
+        /// <summary>
         /// Gets or sets the time an inertial pan happens for
         /// </summary>
-        public TimeSpan InertialPanPeriod { get; set; } = TimeSpan.FromSeconds(1.0);
+        public TimeSpan InertialPanDuration { get; set; } = TimeSpan.FromSeconds(1.0);
     }
 }

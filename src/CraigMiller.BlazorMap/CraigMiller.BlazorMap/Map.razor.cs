@@ -83,7 +83,7 @@ public partial class Map : ComponentBase
         //canvas.Scale(paintEventArgs.BackendRenderTarget.Width / paintEventArgs.Info.Width, paintEventArgs.BackendRenderTarget.Height / paintEventArgs.Info.Height);
         //canvas.Scale(paintEventArgs.Info.Width / paintEventArgs.BackendRenderTarget.Width, paintEventArgs.Info.Height / paintEventArgs.BackendRenderTarget.Height);
 
-        _engine.InertialPanUpdateScene();
+        _engine.UpdateAnimations();
 
         _engine.Draw(canvas);
     }
