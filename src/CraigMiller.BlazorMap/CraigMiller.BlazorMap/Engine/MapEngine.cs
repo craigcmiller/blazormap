@@ -10,7 +10,7 @@ namespace CraigMiller.BlazorMap.Engine
         bool _isDragging;
         PanPosition _lastMousePosition, _lastMousePositionForInertiaCalculation;
         bool _isInertialPanning;
-        DateTime _lastInertialPanUpdate;
+        DateTime _lastInertialPanSetTime, _lastInertialPanUpdate;
         double _inertialXPerSecond, _inertialYPerSecond;
 
         record struct PanPosition(double X, double Y, DateTime Timestamp);
@@ -30,47 +30,48 @@ namespace CraigMiller.BlazorMap.Engine
         {
             _isDragging = false;
 
-            double secondsDelta = (DateTime.UtcNow - _lastMousePosition.Timestamp).TotalSeconds;
+            DateTime now = DateTime.UtcNow;
 
-            if (secondsDelta < 0.02 && (Math.Abs(_inertialXPerSecond) > 0.1 || Math.Abs(_inertialYPerSecond) > 0.1))
+            double secondsSinceLastMouseMove = (now - _lastMousePosition.Timestamp).TotalSeconds;
+
+            if (secondsSinceLastMouseMove < 0.02)
             {
-                _isInertialPanning = true;
-                _lastInertialPanUpdate = _lastMousePosition.Timestamp;
+                double xDelta = x - _lastMousePositionForInertiaCalculation.X;
+                double yDelta = y - _lastMousePositionForInertiaCalculation.Y;
 
-                _inertialXPerSecond *= 0.5;
-                _inertialYPerSecond *= 0.5;
+                double secondsSinceLastPanRecord = (now - _lastMousePositionForInertiaCalculation.Timestamp).TotalSeconds;
+
+                _inertialXPerSecond = xDelta / secondsSinceLastPanRecord;
+                _inertialYPerSecond = yDelta / secondsSinceLastPanRecord;
+
+                if (Math.Abs(_inertialXPerSecond) > 0.1 || Math.Abs(_inertialYPerSecond) > 0.1)
+                {
+                    _isInertialPanning = true;
+                    _lastInertialPanUpdate = _lastInertialPanSetTime = now;
+                }
             }
         }
 
-        public void PrimaryMouseMove(double mouseX, double mouseY)
+        public void PrimaryMouseMove(double x, double y)
         {
             if (_isDragging)
             {
-                double xDiff = mouseX - _lastMousePosition.X;
-                double yDiff = mouseY - _lastMousePosition.Y;
+                double xDiff = x - _lastMousePosition.X;
+                double yDiff = y - _lastMousePosition.Y;
 
                 AreaView.MoveBy(xDiff, yDiff);
 
                 DateTime now = DateTime.UtcNow;
 
-                UpdateInertialPanSpeed(mouseX, mouseY, now);
+                UpdateInertialPanSpeed(now);
 
-                _lastMousePosition = new PanPosition(mouseX, mouseY, now);
+                _lastMousePosition = new PanPosition(x, y, now);
             }
         }
 
-        private void UpdateInertialPanSpeed(double mouseX, double mouseY, DateTime now)
+        private void UpdateInertialPanSpeed(DateTime now)
         {
-            double secondsDelta = (now - _lastMousePositionForInertiaCalculation.Timestamp).TotalSeconds;
-            double xDelta = mouseX - _lastMousePositionForInertiaCalculation.X;
-            double yDelta = mouseY - _lastMousePositionForInertiaCalculation.Y;
-
-            _inertialXPerSecond = xDelta / secondsDelta;
-            _inertialYPerSecond = yDelta / secondsDelta;
-
-            //Console.WriteLine($"{_inertialXPerSecond}, {_inertialYPerSecond}, {secondsDelta}, {xDelta}, {yDelta}");
-
-            if ((now - _lastMousePositionForInertiaCalculation.Timestamp).TotalSeconds > 0.05)
+            if ((now - _lastMousePositionForInertiaCalculation.Timestamp).TotalSeconds > 0.1)
             {
                 _lastMousePositionForInertiaCalculation = _lastMousePosition;
             }
@@ -103,19 +104,32 @@ namespace CraigMiller.BlazorMap.Engine
             if (_isInertialPanning)
             {
                 DateTime now = DateTime.UtcNow;
-                double secondsSinceLastPan = (now - _lastInertialPanUpdate).TotalSeconds;
+                double secondsSinceLastPan = (now - _lastInertialPanSetTime).TotalSeconds;
+                double ratioOfPan = 1.0 - (secondsSinceLastPan / InertialPanPeriod.TotalSeconds);
 
-                AreaView.MoveBy(_inertialXPerSecond * secondsSinceLastPan, _inertialYPerSecond * secondsSinceLastPan);
-
-                _inertialXPerSecond *= 0.9;
-                _inertialYPerSecond *= 0.9;
-
-                if (Math.Abs(_inertialXPerSecond) < 0.1 && Math.Abs(_inertialYPerSecond) < 0.1)
+                // If ratio of pan is under zero then stop the pan
+                if (ratioOfPan < 0.0)
                 {
                     _isInertialPanning = false;
+                    _lastInertialPanSetTime = now;
+                }
+                else
+                {
+                    double secondsSinceLastSceneUpdate = (now - _lastInertialPanUpdate).TotalSeconds;
+
+                    double moveXBy = _inertialXPerSecond * secondsSinceLastSceneUpdate * ratioOfPan;
+                    double moveYBy = _inertialYPerSecond * secondsSinceLastSceneUpdate * ratioOfPan;
+
+                    AreaView.MoveBy(moveXBy, moveYBy);
+
                     _lastInertialPanUpdate = now;
                 }
             }
         }
+
+        /// <summary>
+        /// Gets or sets the time an inertial pan happens for
+        /// </summary>
+        public TimeSpan InertialPanPeriod { get; set; } = TimeSpan.FromSeconds(1.0);
     }
 }
