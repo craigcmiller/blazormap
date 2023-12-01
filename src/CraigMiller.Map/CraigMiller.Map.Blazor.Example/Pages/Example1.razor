@@ -1,0 +1,72 @@
+﻿@page "/"
+
+<PageTitle>BlazorMap</PageTitle>
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">Navbar w/ text</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarText">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link" aria-current="page" href="#">Home</a>
+                </li>
+            </ul>
+            <span class="navbar-text">
+                @_map?.Engine.AreaView.CanvasWidth
+                @_map?.Engine.AreaView.CanvasHeight
+            </span>
+        </div>
+    </div>
+</nav>
+<Map @ref="_map" Style="height:800px" CenterLatitude="0" CenterLongitude="0" />
+
+<div class="row g-3 mt-1">
+    <div class="col">
+        <label class="form-label">Latitude</label>
+        <input @bind-value="_animateLatText" type="text" class="form-control" placeholder="decimal latitude" aria-label="Latitude">
+    </div>
+    <div class="col">
+        <label class="form-label">Longitude</label>
+        <input @bind-value="_animateLonText" type="text" class="form-control" placeholder="decimal longitude" aria-label="Longitude">
+    </div>
+    <div class="col-12">
+        <button @onclick="Animate" class="btn btn-primary">Animate Zoom To</button>
+    </div>
+</div>
+
+@code {
+    Map? _map;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _map!.AddDebugLayers();
+        }
+    }
+
+    string? _animateLatText = "50.83560181", _animateLonText = "-0.29722199";
+
+    private void Animate()
+    {
+        if (!double.TryParse(_animateLatText, out double lat) || !double.TryParse(_animateLonText, out double lon))
+        {
+            return;
+        }
+
+        _map!.Engine.AddLayer(new CircleMarkerLayer
+        {
+            Locations = [ new Location(lat, lon) ]
+        });
+
+        TimeSpan timespan = TimeSpan.FromSeconds(5);
+
+        var pan = new PanToLocationAnimation(new Location(lat, lon), timespan, RateFunctions.AccelerateDecelerate);
+        var zoom = new ZoomAnimation(0.1, TimeSpan.FromSeconds(2), RateFunctions.AccelerateDecelerate);
+
+        _map!.Engine.EnqueueAnimation(new CombinedAnimation(new DeferredAnimation(zoom, TimeSpan.FromSeconds(3)), pan));
+    }
+}
