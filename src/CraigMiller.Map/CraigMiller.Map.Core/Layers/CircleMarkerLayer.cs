@@ -9,7 +9,8 @@ namespace CraigMiller.Map.Core.Layers
         {
             Color = SKColors.Red,
             Style = SKPaintStyle.Stroke,
-            StrokeWidth = 3f
+            StrokeWidth = 3f,
+            IsAntialias = true,
         };
 
         public void DrawLayer(SKCanvas canvas, GeoConverter converter)
@@ -23,9 +24,25 @@ namespace CraigMiller.Map.Core.Layers
         private void DrawMarker(SKCanvas canvas, GeoConverter converter, double lat, double lon)
         {
             converter.LatLonToCanvas(lat, lon, out float x, out float y);
-            canvas.DrawCircle(x, y, 10f, _paint);
+            canvas.DrawCircle(x, y, Radius, _paint);
         }
 
         public IList<Location> Locations { get; set; } = new List<Location>();
+
+        public float Radius { get; set; } = 10f;
+
+        public static DurationAnimatedLayer<CircleMarkerLayer> CreateAnimated(CircleMarkerLayer circleMarkerLayer, TimeSpan duration, float minRadius, float maxRadius)
+        {
+            float radiusDelta = maxRadius - minRadius;
+
+            DurationAnimatedLayer<CircleMarkerLayer> animatedLayer = new(circleMarkerLayer, duration, (CircleMarkerLayer layer, GeoConverter converter, double secondsSinceStart, double ratioOfDuration) =>
+            {
+                float ratioOfRadius = (float)(ratioOfDuration * radiusDelta) + minRadius;
+
+                circleMarkerLayer.Radius = ratioOfRadius;
+            });
+
+            return animatedLayer;
+        }
     }
 }

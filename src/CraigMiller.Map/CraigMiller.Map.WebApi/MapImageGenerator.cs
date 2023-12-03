@@ -10,12 +10,12 @@ namespace CraigMiller.Map.WebApi
     {
         public static SKBitmap Generate(int width, int height, Location center, int tileZoomLevel)
         {
-            ImageMapRenderer renderer = new();
+            MapImageRenderer renderer = new();
             renderer.Engine.AreaView.CanvasWidth = width;
             renderer.Engine.AreaView.CanvasHeight = height;
 
-            renderer.Engine.Center = center;
             renderer.Engine.Zoom = Tile.GetZoomScale(tileZoomLevel);
+            renderer.Engine.Center = center;
 
             AddDebugLayers(renderer.Engine);
 
@@ -24,8 +24,14 @@ namespace CraigMiller.Map.WebApi
 
         public static void AddDebugLayers(MapEngine engine)
         {
+            var httpClient = new HttpClient();
+            httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9");
+            httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Accept-Encoding", "gzip, deflate");
+            httpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.88 Safari/537.36");
+            httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Accept-Charset", "ISO-8859-1");
+
             engine.AddLayer(new BackgroundFillLayer());
-            engine.AddLayer(new TileLayer(new HttpTileLoader(new HttpClient()))
+            engine.AddLayer(new TileLayer(new HttpTileLoader(httpClient))
             {
                 SynchronousLoading = true
             });

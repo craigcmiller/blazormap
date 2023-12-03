@@ -57,10 +57,12 @@
             return;
         }
 
-        _map!.Engine.AddLayer(new CircleMarkerLayer
-        {
-            Locations = [ new Location(lat, lon) ]
-        });
+        var circleMarkerLayer = new CircleMarkerLayer
+            {
+                Locations = [new Location(lat, lon)]
+            };
+
+        _map!.Engine.AddLayer(CircleMarkerLayer.CreateAnimated(circleMarkerLayer, TimeSpan.FromSeconds(2), 8, 32));
 
         TimeSpan timespan = TimeSpan.FromSeconds(5);
 
