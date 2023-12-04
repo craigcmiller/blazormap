@@ -57,12 +57,16 @@
             return;
         }
 
+        AddRouteLayer(lat, lon);
+
         var circleMarkerLayer = new CircleMarkerLayer
             {
                 Locations = [new Location(lat, lon)]
             };
 
-        _map!.Engine.AddLayer(CircleMarkerLayer.CreateAnimated(circleMarkerLayer, TimeSpan.FromSeconds(2), 8, 32));
+        DurationAnimatedLayer<CircleMarkerLayer> animatedCircleMarker = CircleMarkerLayer.CreateAnimated(circleMarkerLayer, TimeSpan.FromSeconds(2), 8, 32);
+        animatedCircleMarker.MaxRepetitions = 4;
+        _map!.Engine.AddLayer(animatedCircleMarker);
 
         TimeSpan timespan = TimeSpan.FromSeconds(5);
 
@@ -70,5 +74,28 @@
         var zoom = new ZoomAnimation(0.1, TimeSpan.FromSeconds(2), RateFunctions.AccelerateDecelerate);
 
         _map!.Engine.EnqueueAnimation(new CombinedAnimation(new DeferredAnimation(zoom, TimeSpan.FromSeconds(3)), pan));
+    }
+
+    private void AddRouteLayer(double lat, double lon)
+    {
+        RenderableLayer? existingRouteLayer = _map!.Engine.Layers.FirstOrDefault(rl => rl.Layer is RouteLayer);
+        if (existingRouteLayer is not null)
+        {
+            _map!.Engine.Layers.Remove(existingRouteLayer);
+        }
+
+        RouteLayer routeLayer = new();
+
+        routeLayer.Route.AddWaypoint(lat - 1.0, lon - 1.0);
+        routeLayer.Route.AddWaypoint(lat - 0.75, lon - 0.75);
+        routeLayer.Route.AddWaypoint(lat - 0.75, lon - 0.5);
+        routeLayer.Route.AddWaypoint(lat - 0.5, lon - 0.75);
+        routeLayer.Route.AddWaypoint(lat - 0.25, lon - 0.5);
+        routeLayer.Route.AddWaypoint(lat - 0.5, lon - 0.25);
+        routeLayer.Route.AddWaypoint(lat - 0.25, lon - 0.25);
+        routeLayer.Route.AddWaypoint(lat - 0.25, lon + 0.25);
+        routeLayer.Route.AddWaypoint(lat, lon);
+
+        _map!.Engine.AddLayer(routeLayer);
     }
 }

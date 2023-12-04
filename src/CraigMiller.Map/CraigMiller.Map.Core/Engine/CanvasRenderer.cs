@@ -4,6 +4,8 @@ namespace CraigMiller.Map.Core.Engine
 {
     public class CanvasRenderer
     {
+        readonly IList<RenderableLayer> _layersToEvict;
+
         public CanvasRenderer()
         {
             AreaView = new GeoConverter
@@ -14,6 +16,7 @@ namespace CraigMiller.Map.Core.Engine
             };
 
             Layers = new List<RenderableLayer>();
+            _layersToEvict = new List<RenderableLayer>();
         }
 
         public GeoConverter AreaView { get; set; }
@@ -28,12 +31,34 @@ namespace CraigMiller.Map.Core.Engine
 
         public void Draw(SKCanvas canvas)
         {
+            DateTime drawStart = DateTime.UtcNow;
+
             foreach (RenderableLayer renderableLayer in Layers)
             {
                 if (renderableLayer.ShouldRender)
                 {
+                    if (renderableLayer.AnimatedLayer is not null)
+                    {
+                        if (renderableLayer.AnimatedLayer.Update(AreaView, drawStart))
+                        {
+                            _layersToEvict.Add(renderableLayer);
+
+                            continue;
+                        }
+                    }
+
                     renderableLayer.Layer.DrawLayer(canvas, AreaView);
                 }
+            }
+
+            if (_layersToEvict.Count > 0)
+            {
+                foreach (RenderableLayer renderableLayer in _layersToEvict)
+                {
+                    Layers.Remove(renderableLayer);
+                }
+
+                _layersToEvict.Clear();
             }
         }
 

@@ -2,7 +2,7 @@
 
 namespace CraigMiller.Map.Core.Animation
 {
-    public abstract class MapAnimation
+    public abstract class MapAnimation : IAnimation
     {
         DateTime _lastUpdate;
 
@@ -15,7 +15,7 @@ namespace CraigMiller.Map.Core.Animation
             _lastUpdate = StartTime = start;
         }
 
-        internal bool Update(GeoConverter areaView, DateTime currentTime)
+        public bool Update(GeoConverter areaView, DateTime currentTime)
         {
             bool isComplete = Update(areaView, (currentTime - StartTime).TotalSeconds, (currentTime - _lastUpdate).TotalSeconds);
 

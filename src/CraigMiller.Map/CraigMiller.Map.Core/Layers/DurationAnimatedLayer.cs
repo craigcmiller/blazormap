@@ -3,14 +3,15 @@ using SkiaSharp;
 
 namespace CraigMiller.Map.Core.Layers
 {
-    public class DurationAnimatedLayer<TLayer> : ILayer where TLayer : ILayer
+    public class DurationAnimatedLayer<TLayer> : IAnimatedLayer where TLayer : ILayer
     {
         double _durationSeconds;
         readonly TLayer _layer;
-        DateTime _startTime;
+        DateTime _startTime, _lastUpdate;
+        double _secondsSinceStart, _ratioOfDuration;
         readonly DurationAnimatedLayerUpdate<TLayer> _updateLayer;
         bool reversed;
-        int _repeats;
+        int _repetitions;
 
         public DurationAnimatedLayer(TLayer layer, TimeSpan duration, DurationAnimatedLayerUpdate<TLayer> updateLayer)
         {
@@ -20,27 +21,39 @@ namespace CraigMiller.Map.Core.Layers
             _updateLayer = updateLayer;
         }
 
-        public void DrawLayer(SKCanvas canvas, GeoConverter converter)
+        public bool Update(GeoConverter areaView, DateTime currentTime)
         {
-            DateTime now = DateTime.UtcNow;
+            _lastUpdate = currentTime;
 
-            double secondsSinceStart = (now - _startTime).TotalSeconds;
-            double ratioOfDuration = secondsSinceStart / _durationSeconds;
+            _secondsSinceStart = (_lastUpdate - _startTime).TotalSeconds;
+            _ratioOfDuration = _secondsSinceStart / _durationSeconds;
 
-            _updateLayer(_layer, converter, secondsSinceStart, reversed ? 1.0 - ratioOfDuration : ratioOfDuration);
-
-            _layer.DrawLayer(canvas, converter);
-
-            if (ratioOfDuration >= 1.0)
+            if (_ratioOfDuration >= 1.0)
             {
-                _startTime = now;
-                _repeats++;
+                _startTime = currentTime;
+                _secondsSinceStart = _ratioOfDuration = 0.0;
+
+                if (_repetitions++ >= MaxRepetitions)
+                {
+                    return true;
+                }
 
                 if (ReverseOnCompletion)
                 {
                     reversed = !reversed;
                 }
             }
+
+            return false;
+        }
+
+        public void DrawLayer(SKCanvas canvas, GeoConverter converter)
+        {
+            DateTime now = DateTime.UtcNow;
+
+            _updateLayer(_layer, converter, _secondsSinceStart, reversed ? 1.0 - _ratioOfDuration : _ratioOfDuration);
+
+            _layer.DrawLayer(canvas, converter);
         }
 
         public TimeSpan Duration
@@ -51,7 +64,7 @@ namespace CraigMiller.Map.Core.Layers
 
         public bool ReverseOnCompletion { get; set; } = true;
 
-        public int MaxRepeats { get; set; } = 1;
+        public int MaxRepetitions { get; set; }
     }
 
     public delegate void DurationAnimatedLayerUpdate<TLayer>(TLayer layer, GeoConverter converter, double secondsSinceStart, double ratioOfDuration) where TLayer : ILayer;
