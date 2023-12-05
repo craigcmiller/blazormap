@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Components.Web;
 using CraigMiller.Map.Core.Engine;
 using CraigMiller.Map.Core.Layers;
 using CraigMiller.Map.Core.Layers.Tiling;
+using SkiaSharp;
 
 namespace CraigMiller.Map.Blazor;
 
@@ -81,9 +82,13 @@ public partial class Map : ComponentBase
         _engine.AreaView.CanvasWidth = paintEventArgs.Info.Width;
         _engine.AreaView.CanvasHeight = paintEventArgs.Info.Height;
 
+        SKCanvas canvas = paintEventArgs.Surface.Canvas;
+
+        _engine.BeginRotation(canvas);
+
         _engine.UpdateAnimations();
 
-        _engine.Draw(paintEventArgs.Surface.Canvas);
+        _engine.Draw(canvas);
     }
 
     private void OnMouseDown(MouseEventArgs args)

@@ -91,6 +91,9 @@ namespace CraigMiller.Map.Core.Engine
         /// <param name="animateDuration"></param>
         public void ZoomOn(double x, double y, double zoomBy, TimeSpan? animateDuration)
         {
+            x += CanvasWidthOffset / 2.0;
+            y += CanvasHeightOffset / 2.0;
+
             if (animateDuration.HasValue)
             {
                 SetActiveAnimation(new ZoomHoldingPointAnimation(zoomBy * AreaView.Zoom, new PointD(x, y), TimeSpan.FromSeconds(0.5), ratio => ratio));

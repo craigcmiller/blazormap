@@ -1,4 +1,5 @@
-﻿using SkiaSharp;
+﻿using Microsoft.VisualBasic;
+using SkiaSharp;
 using System.Xml;
 
 namespace CraigMiller.Map.Core.Engine
@@ -33,28 +34,6 @@ namespace CraigMiller.Map.Core.Engine
         {
             DateTime drawStart = DateTime.UtcNow;
 
-            canvas.Save();
-
-            double canvasWidth = AreaView.CanvasWidth;
-            double canvasHeight = AreaView.CanvasHeight;
-
-            double maxDimension = Math.Ceiling(Math.Sqrt(canvasWidth * canvasWidth + canvasHeight * canvasHeight));
-            double widthDiff = maxDimension - canvasWidth;
-            double heightDiff = maxDimension - canvasHeight;
-            AreaView.CanvasToProjected(-widthDiff / 2.0, -heightDiff / 2.0, out double xOffset, out double yOffset);
-            //AreaView.ProjectedLeft += xOffset;
-            //AreaView.ProjectedBottom += yOffset;
-            AreaView.CanvasWidth = AreaView.CanvasHeight = maxDimension;
-
-            Console.WriteLine($"Orig: {canvasWidth:0} {canvasHeight:0}, new: {maxDimension:0}, diff: {widthDiff} {heightDiff}");
-
-            float halfWidth = (float)canvasWidth / 2f;
-            float halfHeight = (float)canvasHeight / 2f;
-            canvas.Translate(halfWidth, halfHeight);
-            canvas.RotateRadians(RotationRadians);
-            //canvas.Translate(-halfWidth, -halfHeight);
-            canvas.Translate((float)-maxDimension / 2f, (float)-maxDimension / 2f);
-
             foreach (RenderableLayer renderableLayer in Layers)
             {
                 if (renderableLayer.ShouldRender)
@@ -73,13 +52,6 @@ namespace CraigMiller.Map.Core.Engine
                 }
             }
 
-            canvas.Restore();
-
-            //AreaView.ProjectedLeft -= xOffset;
-            //AreaView.ProjectedBottom -= yOffset;
-            AreaView.CanvasWidth = canvasWidth;
-            AreaView.CanvasHeight = canvasHeight;
-
             if (_layersToEvict.Count > 0)
             {
                 foreach (RenderableLayer renderableLayer in _layersToEvict)
@@ -89,6 +61,34 @@ namespace CraigMiller.Map.Core.Engine
 
                 _layersToEvict.Clear();
             }
+        }
+
+        public double CanvasWidthOffset { get; private set; }
+
+        public double CanvasHeightOffset { get; private set; }
+
+        public void BeginRotation(SKCanvas canvas)
+        {
+            canvas.Save();
+
+            double canvasWidth = AreaView.CanvasWidth;
+            double canvasHeight = AreaView.CanvasHeight;
+            double maxDimension = Math.Ceiling(Math.Sqrt(canvasWidth * canvasWidth + canvasHeight * canvasHeight));
+            CanvasWidthOffset = maxDimension - canvasWidth;
+            CanvasHeightOffset = maxDimension - canvasHeight;
+            AreaView.CanvasToProjected(-CanvasWidthOffset / 2.0, -CanvasHeightOffset / 2.0, out double xOffset, out double yOffset);
+            //AreaView.ProjectedLeft += xOffset;
+            //AreaView.ProjectedBottom += yOffset;
+            AreaView.CanvasWidth = AreaView.CanvasHeight = maxDimension;
+
+            //Console.WriteLine($"Orig: {canvasWidth:0} {canvasHeight:0}, new: {maxDimension:0}, diff: {CanvasWidthOffset} {CanvasHeightOffset}");
+
+            float halfWidth = (float)canvasWidth / 2f;
+            float halfHeight = (float)canvasHeight / 2f;
+            canvas.Translate(halfWidth, halfHeight);
+            canvas.RotateRadians(RotationRadians);
+            //canvas.Translate(-halfWidth, -halfHeight);
+            canvas.Translate((float)-maxDimension / 2f, (float)-maxDimension / 2f);
         }
 
         public Location Center
