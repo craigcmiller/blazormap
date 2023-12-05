@@ -11,7 +11,7 @@
             _itemEvicted = itemEvicted;
         }
 
-        public int MaxSize { get; set; } = 256;
+        public int MaxSize { get; set; } = 512;
 
         public bool TryGetValue(TKey key, out TVal? val)
         {

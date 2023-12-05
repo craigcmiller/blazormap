@@ -47,7 +47,7 @@ namespace CraigMiller.Map.Core.Layers
         {
             IsAntialias = true,
             Style = SKPaintStyle.Fill,
-            Color = SKColors.White.WithAlpha(150)
+            Color = SKColors.White.WithAlpha(210)
         };
 
         public void DrawLayer(SKCanvas canvas, GeoConverter converter)
@@ -81,29 +81,21 @@ namespace CraigMiller.Map.Core.Layers
                     double pixDist = Math.Sqrt((xDiff * xDiff) + (yDiff * yDiff));
 
                     double rads = Math.Atan2(yDiff, xDiff);
-                    double degs = rads * 180.0 / Math.PI;
-                    //degs = 180.0 - degs;
-                    if (degs < 0.0)
-                    {
-                        //degs += 90.0;
-                    }
-                    else
-                    {
-                        
-                    }
+                    double degs = rads / Math.PI * 180.0;
+                    degs = (90.0 + degs + 360.0) % 360.0;
 
-                    string infoText = $"{dist.NatuticalMiles:0.0}nm {degs:000}° {180.0 - degs:000}° {degs - 180.0:000} {180.0 - degs + 270:000}°";
+                    string infoText = $"{dist.NatuticalMiles:0.0}nm {degs:000}°";//: {prevCanvas.X:0} {prevCanvas.Y:0} to {curCanvas.X:0} {curCanvas.Y:0}";
 
                     float textWidth = _textPaint.MeasureText(infoText);
-                    if (textWidth + 20f < pixDist)
+                    if (textWidth + 22f < pixDist)
                     {
                         canvas.Save();
 
                         canvas.Translate(prevCanvas.X, prevCanvas.Y);
                         canvas.RotateRadians((float)rads);
 
-                        canvas.DrawRoundRect(6f, 5f, textWidth + 6f, 14f, 4f, 4f, _textBackgroundPaint);
-                        canvas.DrawText(infoText, 10f, 16f, _textPaint);
+                        canvas.DrawRoundRect(14f, -7f, textWidth + 6f, 14f, 4f, 4f, _textBackgroundPaint);
+                        canvas.DrawText(infoText, 18f, 4f, _textPaint);
 
                         canvas.Restore();
                     }

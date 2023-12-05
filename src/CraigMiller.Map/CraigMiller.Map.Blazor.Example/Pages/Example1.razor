@@ -1,4 +1,5 @@
 ﻿@page "/"
+@using CraigMiller.Map.Core.Layers.Tiling
 
 <PageTitle>BlazorMap</PageTitle>
 
@@ -24,16 +25,29 @@
 <Map @ref="_map" Style="height:800px" CenterLatitude="0" CenterLongitude="0" />
 
 <div class="row g-3 mt-1">
-    <div class="col">
+    <div class="col-6">
         <label class="form-label">Latitude</label>
         <input @bind-value="_animateLatText" type="text" class="form-control" placeholder="decimal latitude" aria-label="Latitude">
     </div>
-    <div class="col">
+    <div class="col-6">
         <label class="form-label">Longitude</label>
         <input @bind-value="_animateLonText" type="text" class="form-control" placeholder="decimal longitude" aria-label="Longitude">
     </div>
-    <div class="col-12">
-        <button @onclick="Animate" class="btn btn-primary">Animate Zoom To</button>
+</div>
+<div class="row g-3 mt-1">
+    <div class="col">
+        <button @onclick="() => CenterOn(true)" class="btn btn-primary">Animate Zoom To</button>
+        <button @onclick="() => CenterOn(false)" class="btn btn-primary">Instant Center</button>
+    </div>
+</div>
+
+<div class="row g-3 mt-1">
+    <div class="col-6">
+        <label class="form-label">Rotation degrees:</label>
+        <input @bind-value="_rotationDegreesStr" type="text" class="form-control" placeholder="degrees">
+    </div>
+    <div class="col mt-auto">
+        <button @onclick="Rotate" class="btn btn-primary">Rotate</button>
     </div>
 </div>
 
@@ -50,7 +64,7 @@
 
     string? _animateLatText = "50.83560181", _animateLonText = "-0.29722199";
 
-    private void Animate()
+    private void CenterOn(bool animate)
     {
         if (!double.TryParse(_animateLatText, out double lat) || !double.TryParse(_animateLonText, out double lon))
         {
@@ -59,24 +73,34 @@
 
         AddRouteLayer(lat, lon);
 
+        var centerLoc = new Location(lat, lon);
+
         var circleMarkerLayer = new CircleMarkerLayer
             {
-                Locations = [new Location(lat, lon)]
+                Locations = [ centerLoc ]
             };
 
         DurationAnimatedLayer<CircleMarkerLayer> animatedCircleMarker = CircleMarkerLayer.CreateAnimated(circleMarkerLayer, TimeSpan.FromSeconds(2), 8, 32);
         animatedCircleMarker.MaxRepetitions = 4;
         _map!.Engine.AddLayer(animatedCircleMarker);
 
-        TimeSpan timespan = TimeSpan.FromSeconds(5);
+        if (animate)
+        {
+            TimeSpan timespan = TimeSpan.FromSeconds(5);
 
-        var pan = new PanToLocationAnimation(new Location(lat, lon), timespan, RateFunctions.AccelerateDecelerate);
-        var zoom = new ZoomAnimation(0.1, TimeSpan.FromSeconds(2), RateFunctions.AccelerateDecelerate);
+            var pan = new PanToLocationAnimation(new Location(lat, lon), timespan, RateFunctions.AccelerateDecelerate);
+            var zoom = new ZoomAnimation(0.1, TimeSpan.FromSeconds(2), RateFunctions.AccelerateDecelerate);
 
-        _map!.Engine.EnqueueAnimation(new CombinedAnimation(new DeferredAnimation(zoom, TimeSpan.FromSeconds(3)), pan));
+            _map!.Engine.EnqueueAnimation(new CombinedAnimation(new DeferredAnimation(zoom, TimeSpan.FromSeconds(3)), pan));
+        }
+        else
+        {
+            _map!.Engine.Zoom = Tile.GetZoomScale(9);
+            _map!.Engine.Center = centerLoc;
+        }
     }
 
-    private void AddRouteLayer(double lat, double lon)
+    void AddRouteLayer(double lat, double lon)
     {
         RenderableLayer? existingRouteLayer = _map!.Engine.Layers.FirstOrDefault(rl => rl.Layer is RouteLayer);
         if (existingRouteLayer is not null)
@@ -97,5 +121,17 @@
         routeLayer.Route.AddWaypoint(lat, lon);
 
         _map!.Engine.AddLayer(routeLayer);
+    }
+
+    string? _rotationDegreesStr;
+
+    void Rotate()
+    {
+        if (!float.TryParse(_rotationDegreesStr, out float rotation))
+        {
+            return;
+        }
+
+        _map!.Engine.RotationDegrees = rotation;
     }
 }

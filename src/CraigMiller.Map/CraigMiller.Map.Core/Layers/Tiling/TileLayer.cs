@@ -21,8 +21,8 @@ namespace CraigMiller.Map.Core.Layers.Tiling
             });
             _paint = new SKPaint
             {
-                //IsAntialias = true,
-                //FilterQuality = SKFilterQuality.High,
+                IsAntialias = true,
+                FilterQuality = SKFilterQuality.High,
             };
         }
 
@@ -77,7 +77,7 @@ namespace CraigMiller.Map.Core.Layers.Tiling
                 converter.ProjectedToCanvas(projected.Left, projected.Bottom, out double x1, out double y1);
                 converter.ProjectedToCanvas(projected.Left + projected.Width, projected.Bottom + projected.Height, out double x2, out double y2);
 
-                canvas.DrawBitmap(bitmap, new SKRect((float)x1, (float)y2, (float)x2, (float)y1), _paint);
+                canvas.DrawBitmap(bitmap, new SKRect((float)Math.Round(x1), (int)Math.Round(y2), (float)Math.Round(x2), (float)Math.Round(y1)), _paint);
             }
         }
 
