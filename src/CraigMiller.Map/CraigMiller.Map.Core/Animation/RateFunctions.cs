@@ -21,5 +21,5 @@
         public static double DecelerateToStop(double ratioOfDuration) => Math.Pow(1.0 - ratioOfDuration, 2.0);
     }
 
-    public delegate double RateFunction(double radioOfDuration);
+    public delegate double RateFunction(double ratioOfDuration);
 }

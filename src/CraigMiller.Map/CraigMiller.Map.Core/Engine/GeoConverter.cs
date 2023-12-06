@@ -183,5 +183,13 @@ namespace CraigMiller.Map.Core.Engine
             ProjectedLeft -= projectedDiffX - projectedLeft;
             ProjectedBottom -= projectedDiffY - projectedTop;
         }
+
+        public float RotationRadians { get; set; }
+
+        public float RotationDegrees
+        {
+            get => RotationRadians / (float)Math.PI * 180f;
+            set => RotationRadians = value / 180.0f * (float)Math.PI;
+        }
     }
 }
