@@ -5,6 +5,7 @@ namespace CraigMiller.Map.Core.Engine
     public class GeoConverter
     {
         double _canvasWidth, _canvasHeight, _zoom;
+        float _rotationRadians;
 
         public GeoConverter()
         {
@@ -184,7 +185,19 @@ namespace CraigMiller.Map.Core.Engine
             ProjectedBottom -= projectedDiffY - projectedTop;
         }
 
-        public float RotationRadians { get; set; }
+        public float RotationRadians
+        {
+            get => _rotationRadians;
+            set
+            {
+                if (value < 0.0)
+                {
+                    value += (float)Math.Tau;
+                }
+
+                _rotationRadians = Math.Abs(value % (float)Math.Tau);
+            }
+        }
 
         public float RotationDegrees
         {

@@ -132,8 +132,6 @@
             return;
         }
 
-        _map!.Engine.RotationDegrees = rotation;
-
-        //_map!.Engine.EnqueueAnimation(new RotationAnimation(TimeSpan.FromSeconds(2), rotation, RateFunctions.AccelerateDecelerate));
+        _map!.Engine.EnqueueAnimation(new RotationAnimation(TimeSpan.FromSeconds(2), rotation, RateFunctions.AccelerateDecelerate));
     }
 }
