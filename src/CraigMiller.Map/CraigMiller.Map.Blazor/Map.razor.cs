@@ -25,6 +25,7 @@ public partial class Map : ComponentBase
         base.OnInitialized();
 
         await using MapJsInterop mapJsInterop = new(JSRuntime!);
+        await mapJsInterop.DisableMouseWheelScroll(_id);
         await mapJsInterop.FitToContainer(_id);
 
         if (CenterLatitude.HasValue && CenterLongitude.HasValue)

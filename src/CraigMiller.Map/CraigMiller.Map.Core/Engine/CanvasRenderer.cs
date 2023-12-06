@@ -73,6 +73,7 @@ namespace CraigMiller.Map.Core.Engine
 
             double canvasWidth = AreaView.CanvasWidth;
             double canvasHeight = AreaView.CanvasHeight;
+
             double maxDimension = Math.Ceiling(Math.Sqrt(canvasWidth * canvasWidth + canvasHeight * canvasHeight));
             CanvasWidthOffset = maxDimension - canvasWidth;
             CanvasHeightOffset = maxDimension - canvasHeight;
@@ -87,6 +88,12 @@ namespace CraigMiller.Map.Core.Engine
             float halfHeight = (float)canvasHeight / 2f;
             canvas.Translate(halfWidth, halfHeight);
             canvas.RotateRadians(RotationRadians);
+
+            if (canvas.TotalMatrix.TryInvert(out SKMatrix reveresedMatrix))
+            {
+                ReverseRotationMatrix = reveresedMatrix;
+            }
+
             //canvas.Translate(-halfWidth, -halfHeight);
             canvas.Translate((float)-maxDimension / 2f, (float)-maxDimension / 2f);
         }
@@ -109,6 +116,18 @@ namespace CraigMiller.Map.Core.Engine
         {
             get => RotationRadians / (float)Math.PI * 180f;
             set => RotationRadians = value / 180.0f * (float)Math.PI;
+        }
+
+        public SKMatrix ReverseRotationMatrix { get; private set; }
+
+        public void ReverseRotatePoint(double x, double y, out double rotatedX, out double rotatedY)
+        {
+            SKPoint pt = ReverseRotationMatrix.MapPoint((float)x, (float)y);
+            rotatedX = pt.X;
+            rotatedY = pt.Y;
+
+            rotatedX += AreaView.CanvasWidth / 2.0;
+            rotatedY += AreaView.CanvasHeight / 2.0;
         }
     }
 }

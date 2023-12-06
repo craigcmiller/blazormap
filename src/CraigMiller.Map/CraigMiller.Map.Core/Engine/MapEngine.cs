@@ -20,6 +20,8 @@ namespace CraigMiller.Map.Core.Engine
 
         public void PrimaryMouseDown(double x, double y)
         {
+            ReverseRotatePoint(x, y, out x, out y);
+
             _isDragging = true;
             _lastMousePosition = _lastMousePositionForInertiaCalculation = new PanPosition(x, y, DateTime.UtcNow);
 
@@ -29,6 +31,8 @@ namespace CraigMiller.Map.Core.Engine
 
         public void PrimaryMouseUp(double x, double y)
         {
+            ReverseRotatePoint(x, y, out x, out y);
+
             _isDragging = false;
 
             CreateInertialPanAnimation(x, y);
@@ -59,6 +63,8 @@ namespace CraigMiller.Map.Core.Engine
 
         public void PrimaryMouseMove(double x, double y)
         {
+            ReverseRotatePoint(x, y, out x, out y);
+
             if (_isDragging)
             {
                 double xDiff = x - _lastMousePosition.X;
@@ -91,8 +97,7 @@ namespace CraigMiller.Map.Core.Engine
         /// <param name="animateDuration"></param>
         public void ZoomOn(double x, double y, double zoomBy, TimeSpan? animateDuration)
         {
-            x += CanvasWidthOffset / 2.0;
-            y += CanvasHeightOffset / 2.0;
+            ReverseRotatePoint(x, y, out x, out y);
 
             if (animateDuration.HasValue)
             {
@@ -110,7 +115,7 @@ namespace CraigMiller.Map.Core.Engine
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <param name="zoomBy"></param>
-        public void ZoomOn(double x, double y, double zoomBy)
+        private void ZoomOn(double x, double y, double zoomBy)
         {
             // Record the projected position of the mouse
             AreaView.CanvasToProjected(x, y, out double projectedMouseX, out double projectedMouseY);

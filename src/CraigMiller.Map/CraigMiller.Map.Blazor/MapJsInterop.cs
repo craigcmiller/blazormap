@@ -4,31 +4,37 @@ namespace CraigMiller.Map.Blazor
 {
     public class MapJsInterop : IAsyncDisposable
     {
-        private readonly Lazy<Task<IJSObjectReference>> moduleTask;
+        private readonly Lazy<Task<IJSObjectReference>> _moduleTask;
 
         public MapJsInterop(IJSRuntime jsRuntime)
         {
-            moduleTask = new(() => jsRuntime.InvokeAsync<IJSObjectReference>(
+            _moduleTask = new(() => jsRuntime.InvokeAsync<IJSObjectReference>(
                "import", "./_content/CraigMiller.Map.Blazor/mapJsInterop.js").AsTask());
         }
 
         public async ValueTask<string> Prompt(string message)
         {
-            var module = await moduleTask.Value;
+            var module = await _moduleTask.Value;
             return await module.InvokeAsync<string>("showPrompt", message);
         }
 
         public async ValueTask FitToContainer(string id)
         {
-            var module = await moduleTask.Value;
+            var module = await _moduleTask.Value;
             await module.InvokeVoidAsync("fitCanvasToContainer", id);
+        }
+
+        public async ValueTask DisableMouseWheelScroll(string elementId)
+        {
+            var module = await _moduleTask.Value;
+            await module.InvokeVoidAsync("disableMousewheelScroll", elementId);
         }
 
         public async ValueTask DisposeAsync()
         {
-            if (moduleTask.IsValueCreated)
+            if (_moduleTask.IsValueCreated)
             {
-                var module = await moduleTask.Value;
+                var module = await _moduleTask.Value;
                 await module.DisposeAsync();
             }
         }

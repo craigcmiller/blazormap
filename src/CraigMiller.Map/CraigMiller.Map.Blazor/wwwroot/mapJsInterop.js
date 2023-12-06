@@ -11,3 +11,11 @@ export function fitCanvasToContainer(canvasId) {
     canvas.width = canvas.offsetWidth;
     canvas.height = canvas.offsetHeight;
 }
+
+// From https://github.com/Mapsui/Mapsui/issues/2042#issuecomment-1584980382
+export function disableMousewheelScroll(elementId) {
+    var element = document.getElementById(elementId);
+    if (element) {
+        element.addEventListener('wheel', e => e.preventDefault(), { passive: false });
+    }
+};
