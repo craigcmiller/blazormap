@@ -82,7 +82,7 @@ namespace CraigMiller.Map.Core.Engine
             float halfWidth = (float)canvasWidth / 2f;
             float halfHeight = (float)canvasHeight / 2f;
             canvas.Translate(halfWidth, halfHeight);
-            canvas.RotateRadians(AreaView.RotationRadians);
+            canvas.RotateRadians(-RotationRadians);
 
             if (canvas.TotalMatrix.TryInvert(out SKMatrix reveresedMatrix))
             {
