@@ -16,8 +16,8 @@ namespace CraigMiller.Map.Core.Animation
 
         public float EndingDirectionDegrees
         {
-            get => EndingDirectionRadians / (float)Math.PI * 180f;
-            set => EndingDirectionRadians = value / 180.0f * (float)Math.PI;
+            get => MathHelper.RadsToDegs(EndingDirectionRadians);
+            set => EndingDirectionRadians = MathHelper.DegsToRads(value);
         }
 
         public float EndingDirectionRadians { get; set; }

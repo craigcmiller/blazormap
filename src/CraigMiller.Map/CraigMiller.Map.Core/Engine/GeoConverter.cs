@@ -188,21 +188,13 @@ namespace CraigMiller.Map.Core.Engine
         public float RotationRadians
         {
             get => _rotationRadians;
-            set
-            {
-                if (value < 0.0)
-                {
-                    value += (float)Math.Tau;
-                }
-
-                _rotationRadians = Math.Abs(value % (float)Math.Tau);
-            }
+            set => _rotationRadians = MathHelper.NormaliseAngle(value);
         }
 
         public float RotationDegrees
         {
-            get => RotationRadians / (float)Math.PI * 180f;
-            set => RotationRadians = value / 180.0f * (float)Math.PI;
+            get => MathHelper.RadsToDegs(_rotationRadians);
+            set => RotationRadians = MathHelper.DegsToRads(value);
         }
     }
 }

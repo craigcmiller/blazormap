@@ -19,6 +19,8 @@
         }
 
         public static double DecelerateToStop(double ratioOfDuration) => Math.Pow(1.0 - ratioOfDuration, 2.0);
+
+        public static double Linear(double ratio) => ratio;
     }
 
     public delegate double RateFunction(double ratioOfDuration);

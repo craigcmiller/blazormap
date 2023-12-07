@@ -2,6 +2,29 @@
 {
     public static class MathHelper
     {
+        public const double HalfPi= Math.PI / 2.0;
+        public const float HalfPiF = MathF.PI / 2f;
+
+        public static void AngleAndDistanceBetweenPoints(double xA, double yA, double xB, double yB, out double radians, out double distance)
+        {
+            double xDiff = xA - xB, yDiff = yA - yB;
+
+            radians = Math.Atan2(yDiff, xDiff);
+            distance = Math.Sqrt((xDiff * xDiff) + (yDiff * yDiff));
+        }
+
+        public static void AngleAndDistanceBetweenPoints(float xA, float yA, float xB, float yB, out float radians, out float distance)
+        {
+            float xDiff = xA - xB, yDiff = yA - yB;
+
+            radians = MathF.Atan2(yDiff, xDiff);
+            distance = MathF.Sqrt((xDiff * xDiff) + (yDiff * yDiff));
+        }
+
+        public static double CanvasAngle(double radians) => (HalfPi + radians + Math.Tau) % Math.Tau;
+
+        public static float CanvasAngle(float radians) => (HalfPiF + radians + MathF.Tau) % MathF.Tau;
+
         /// <summary>
         /// Calculates the angle in radians from <paramref name="fromRadians"/> to <paramref name="toRadians"/>
         /// </summary>
@@ -42,8 +65,31 @@
             return radians;
         }
 
+        /// <summary>
+        /// Normalises <paramref name="radians"/> to between 0 and 2PI
+        /// </summary>
+        /// <param name="radians"></param>
+        /// <returns></returns>
+        public static float NormaliseAngle(float radians)
+        {
+            if (radians < 0)
+            {
+                return (radians % MathF.Tau) + MathF.Tau;
+            }
+            if (radians >= MathF.Tau)
+            {
+                return radians % MathF.Tau;
+            }
+
+            return radians;
+        }
+
         public static double RadsToDegs(double radians) => radians / Math.PI * 180.0;
 
+        public static float RadsToDegs(float radians) => radians / MathF.PI * 180f;
+
         public static double DegsToRads(double degrees) => degrees / 180.0 * Math.PI;
+
+        public static float DegsToRads(float degrees) => degrees / 180f * MathF.PI;
     }
 }

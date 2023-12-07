@@ -77,14 +77,10 @@ namespace CraigMiller.Map.Core.Layers
 
                     Distance dist = Distance.Between(prevWaypoint.Location, curWaypoint.Location);
 
-                    double xDiff = curCanvas.X - prevCanvas.X, yDiff = curCanvas.Y - prevCanvas.Y;
-                    double pixDist = Math.Sqrt((xDiff * xDiff) + (yDiff * yDiff));
+                    MathHelper.AngleAndDistanceBetweenPoints(curCanvas.X, curCanvas.Y, prevCanvas.X, prevCanvas.Y, out float rads, out float pixDist);
+                    float displayDegs = MathHelper.RadsToDegs(MathHelper.CanvasAngle(rads));
 
-                    double rads = Math.Atan2(yDiff, xDiff);
-                    double degs = rads / Math.PI * 180.0;
-                    degs = (90.0 + degs + 360.0) % 360.0;
-
-                    string infoText = $"{dist.NatuticalMiles:0.0}nm {degs:000}°";//: {prevCanvas.X:0} {prevCanvas.Y:0} to {curCanvas.X:0} {curCanvas.Y:0}";
+                    string infoText = $"{dist.NatuticalMiles:0.0}nm {displayDegs:000}°";//: {prevCanvas.X:0} {prevCanvas.Y:0} to {curCanvas.X:0} {curCanvas.Y:0}";
 
                     float textWidth = _textPaint.MeasureText(infoText);
                     if (textWidth + 22f < pixDist)
@@ -92,7 +88,7 @@ namespace CraigMiller.Map.Core.Layers
                         canvas.Save();
 
                         canvas.Translate(prevCanvas.X, prevCanvas.Y);
-                        canvas.RotateRadians((float)rads);
+                        canvas.RotateRadians(rads);
 
                         canvas.DrawRoundRect(14f, -7f, textWidth + 6f, 14f, 4f, 4f, _textBackgroundPaint);
                         canvas.DrawText(infoText, 18f, 4f, _textPaint);
