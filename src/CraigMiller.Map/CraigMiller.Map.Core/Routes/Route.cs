@@ -30,6 +30,8 @@ namespace CraigMiller.Map.Core.Routes
 
         public Waypoint this[int index] => _waypoints[index];
 
+        public int Count => _waypoints.Count;
+
         public Distance Distance
         {
             get

@@ -1,5 +1,6 @@
 ﻿@page "/"
 @using CraigMiller.Map.Core.Layers.Tiling
+@using CraigMiller.Map.Core.Routes
 
 <PageTitle>BlazorMap</PageTitle>
 
@@ -38,6 +39,7 @@
     <div class="col">
         <button @onclick="() => CenterOn(true)" class="btn btn-primary">Animate Zoom To</button>
         <button @onclick="() => CenterOn(false)" class="btn btn-primary">Instant Center</button>
+        <button @onclick="AnimateAlongRoute" class="btn btn-primary">Animate Route</button>
     </div>
 </div>
 
@@ -52,7 +54,7 @@
 </div>
 
 @code {
-    Map? _map;
+        Map? _map;
 
     protected override void OnAfterRender(bool firstRender)
     {
@@ -123,6 +125,48 @@
         _map!.Engine.AddLayer(routeLayer);
     }
 
+    void AnimateAlongRoute()
+    {
+        RenderableLayer? existingRouteLayer = _map!.Engine.Layers.FirstOrDefault(rl => rl.Layer is RouteLayer);
+        if (existingRouteLayer is null)
+        {
+            return;
+        }
+
+        TimeSpan timeBetweenPoints = TimeSpan.FromSeconds(3);
+
+        Route route = ((RouteLayer)existingRouteLayer.Layer).Route;
+        for (int i = 1; i < route.Count; i++)
+        {
+            Waypoint fromWaypoint = route[i - 1];
+            Waypoint toWaypoint = route[i];
+
+            double bearingDegrees = Location.InitialBearingDegrees(fromWaypoint.Location, toWaypoint.Location);
+
+            if (i == 1)
+            {
+                _map!.Engine.EnqueueAnimation(
+                    new CombinedAnimation(
+                        new ZoomAnimation(Tile.GetZoomScale(12), timeBetweenPoints, RateFunctions.Linear),
+                        new PanToLocationAnimation(fromWaypoint.Location, timeBetweenPoints, RateFunctions.AccelerateDecelerate),
+                        new RotationAnimation(timeBetweenPoints, (float)bearingDegrees, RateFunctions.AccelerateDecelerate)));
+            }
+            else
+            {
+                _map!.Engine.EnqueueAnimation(
+                    new CombinedAnimation(
+                        new PanToLocationAnimation(fromWaypoint.Location, timeBetweenPoints, RateFunctions.AccelerateDecelerate),
+                        new RotationAnimation(timeBetweenPoints, (float)bearingDegrees, RateFunctions.AccelerateDecelerate)));
+                //new DeferredAnimation(new RotationAnimation(timeBetweenPoints, (float)bearingDegrees, RateFunctions.AccelerateDecelerate), timeBetweenPoints / 2)));
+            }
+
+            if (i == route.Count - 1)
+            {
+                _map!.Engine.EnqueueAnimation(new PanToLocationAnimation(toWaypoint.Location, timeBetweenPoints, RateFunctions.AccelerateDecelerate));
+            }
+        }
+    }
+
     string? _rotationDegreesStr;
 
     void Rotate()
@@ -132,6 +176,6 @@
             return;
         }
 
-        _map!.Engine.RotationDegrees = rotation;
+        _map!.Engine.EnqueueAnimation(new RotationAnimation(TimeSpan.FromSeconds(2), rotation, RateFunctions.AccelerateDecelerate));
     }
 }
