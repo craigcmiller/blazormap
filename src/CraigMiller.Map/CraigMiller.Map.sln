@@ -9,7 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CraigMiller.Map.Blazor.Exam
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CraigMiller.Map.Core", "CraigMiller.Map.Core\CraigMiller.Map.Core.csproj", "{B2A7F041-29F3-446A-B258-51C0F694AD47}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CraigMiller.Map.WebApi", "CraigMiller.Map.WebApi\CraigMiller.Map.WebApi.csproj", "{F94C5461-9B8E-41A3-BD47-0F20CC8481D9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CraigMiller.Map.WebApi", "CraigMiller.Map.WebApi\CraigMiller.Map.WebApi.csproj", "{F94C5461-9B8E-41A3-BD47-0F20CC8481D9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CraigMiller.Map.Core.Tests", "CraigMiller.Map.Core.Tests\CraigMiller.Map.Core.Tests.csproj", "{28696E83-C73D-4E53-AE74-C40321A1C941}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{F94C5461-9B8E-41A3-BD47-0F20CC8481D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F94C5461-9B8E-41A3-BD47-0F20CC8481D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F94C5461-9B8E-41A3-BD47-0F20CC8481D9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{28696E83-C73D-4E53-AE74-C40321A1C941}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{28696E83-C73D-4E53-AE74-C40321A1C941}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{28696E83-C73D-4E53-AE74-C40321A1C941}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{28696E83-C73D-4E53-AE74-C40321A1C941}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -28,18 +28,12 @@ namespace CraigMiller.Map.Core.Animation
 
             _initialRotation = areaView.RotationRadians;
 
-            _rotationDelta = Math.Abs(EndingDirectionRadians - areaView.RotationRadians);
-            if (_rotationDelta > Math.PI)
-            {
-                _rotationDelta = ((float)Math.Tau - _rotationDelta) * -1f;
-            }
+            _rotationDelta = (float)MathHelper.AngleBetween(_initialRotation, EndingDirectionRadians);
         }
 
         public override void Update(GeoConverter areaView, double secondsSinceStart, double secondsSinceLastUpdate, double ratioOfDuration)
         {
             areaView.RotationRadians = _initialRotation + (float)_ratioToEndOfDistance(ratioOfDuration) * _rotationDelta;
-
-            Console.WriteLine($"{areaView.RotationDegrees:000} - {_rotationDelta / Math.PI * 180:000}");
         }
     }
 }
