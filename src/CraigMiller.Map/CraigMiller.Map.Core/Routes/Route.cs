@@ -22,6 +22,16 @@ namespace CraigMiller.Map.Core.Routes
             AddWaypoint(new Waypoint(lat, lon));
         }
 
+        public void InsertWaypoint(int index, Waypoint waypoint)
+        {
+            _waypoints.Insert(index, waypoint);
+        }
+
+        public void InsertWaypoint(int index, double lat, double lon)
+        {
+            InsertWaypoint(index, new Waypoint(lat, lon));
+        }
+
         public IEnumerator<Waypoint> GetEnumerator() => _waypoints.GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => _waypoints.GetEnumerator();
@@ -30,7 +40,7 @@ namespace CraigMiller.Map.Core.Routes
 
         public Waypoint this[int index] => _waypoints[index];
 
-        public int Count => _waypoints.Count;
+        public void Clear() => _waypoints.Clear();
 
         public Distance Distance
         {

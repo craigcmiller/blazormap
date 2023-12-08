@@ -1,4 +1,5 @@
 ﻿using CraigMiller.Map.Core.Animation;
+using CraigMiller.Map.Core.Layers;
 
 namespace CraigMiller.Map.Core.Engine
 {
@@ -22,20 +23,37 @@ namespace CraigMiller.Map.Core.Engine
         {
             ReverseRotatePoint(x, y, out x, out y);
 
-            _isDragging = true;
             _lastMousePosition = _lastMousePositionForInertiaCalculation = new PanPosition(x, y, DateTime.UtcNow);
 
             _activeAnimation = null;
             _animations.Clear();
+
+            foreach (IInteractiveLayer interactiveLayer in InteractiveLayers)
+            {
+                if (interactiveLayer.PrimaryMouseDown(this, x, y))
+                {
+                    return;
+                }
+            }
+
+            _isDragging = true;
         }
 
         public void PrimaryMouseUp(double x, double y)
         {
             ReverseRotatePoint(x, y, out x, out y);
 
+            CreateInertialPanAnimation(x, y);
+
             _isDragging = false;
 
-            CreateInertialPanAnimation(x, y);
+            foreach (IInteractiveLayer interactiveLayer in InteractiveLayers)
+            {
+                if (interactiveLayer.PrimaryMouseUp(this, x, y))
+                {
+                    return;
+                }
+            }
         }
 
         private void CreateInertialPanAnimation(double x, double y)
@@ -77,6 +95,16 @@ namespace CraigMiller.Map.Core.Engine
                 UpdateInertialPanSpeed(now);
 
                 _lastMousePosition = new PanPosition(x, y, now);
+            }
+            else
+            {
+                foreach (IInteractiveLayer interactiveLayer in InteractiveLayers)
+                {
+                    if (interactiveLayer.MouseMoved(this, x, y))
+                    {
+                        return;
+                    }
+                }
             }
         }
 
@@ -175,5 +203,20 @@ namespace CraigMiller.Map.Core.Engine
         /// Gets or sets the time an inertial pan happens for
         /// </summary>
         public TimeSpan InertialPanDuration { get; set; } = TimeSpan.FromSeconds(1.0);
+
+        public void SecondaryMouseClick(double x, double y)
+        {
+            ReverseRotatePoint(x, y, out x, out y);
+
+            RouteLayer? routeLayer = GetLayers<RouteLayer>().FirstOrDefault();
+            if (routeLayer is null)
+            {
+                AddLayer(routeLayer = new RouteLayer());
+            }
+
+            AreaView.CanvasToLatLon(x, y, out double lat, out double lon);
+
+            routeLayer.Route.AddWaypoint(lat, lon);
+        }
     }
 }

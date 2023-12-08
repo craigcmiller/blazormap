@@ -12,12 +12,6 @@ namespace CraigMiller.Map.Blazor
                "import", "./_content/CraigMiller.Map.Blazor/mapJsInterop.js").AsTask());
         }
 
-        public async ValueTask<string> Prompt(string message)
-        {
-            var module = await _moduleTask.Value;
-            return await module.InvokeAsync<string>("showPrompt", message);
-        }
-
         public async ValueTask FitToContainer(string id)
         {
             var module = await _moduleTask.Value;
@@ -28,6 +22,12 @@ namespace CraigMiller.Map.Blazor
         {
             var module = await _moduleTask.Value;
             await module.InvokeVoidAsync("disableMousewheelScroll", elementId);
+        }
+
+        public async ValueTask DisableContextMenu(string elementId)
+        {
+            var module = await _moduleTask.Value;
+            await module.InvokeVoidAsync("disableContextMenu", elementId);
         }
 
         public async ValueTask DisposeAsync()

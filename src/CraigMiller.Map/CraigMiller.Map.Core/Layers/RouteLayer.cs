@@ -2,11 +2,14 @@
 using CraigMiller.Map.Core.Routes;
 using CraigMiller.Map.Core.Units;
 using SkiaSharp;
+using System.Reflection.Metadata;
 
 namespace CraigMiller.Map.Core.Layers
 {
-    public class RouteLayer : ILayer
+    public class RouteLayer : IInteractiveLayer
     {
+        const float WaypointRadius = 7f;
+
         readonly SKPaint _routeLineBackgroundPaint = new SKPaint
         {
             IsAntialias = true,
@@ -50,12 +53,21 @@ namespace CraigMiller.Map.Core.Layers
             Color = SKColors.White.WithAlpha(210)
         };
 
+        SKPoint[]? _canvasPoints;
+        int _draggingIndex = -1;
+
         public void DrawLayer(SKCanvas canvas, GeoConverter converter)
         {
-            if (Route.WaypointCount > 0)
+            if (Route.WaypointCount == 0)
             {
-                SKPoint[] canvasPoints = Route.Select(wp => converter.LatLonToCanvas(wp.Latitude, wp.Longitude)).ToArray();
+                _canvasPoints = null;
+                return;
+            }
 
+            SKPoint[] canvasPoints = _canvasPoints = Route.Select(wp => converter.LatLonToCanvas(wp.Latitude, wp.Longitude)).ToArray();
+
+            if (Route.WaypointCount >= 2)
+            {
                 var lines = new SKPoint[canvasPoints.Length * 2 - 2];
                 lines[0] = canvasPoints[0];
                 for (int i = 1, lineIndex = 1; i < canvasPoints.Length - 1; i++)
@@ -67,48 +79,112 @@ namespace CraigMiller.Map.Core.Layers
 
                 canvas.DrawPoints(SKPointMode.Lines, lines, _routeLineBackgroundPaint);
                 canvas.DrawPoints(SKPointMode.Lines, lines, _routeLineForegroundPaint);
+            }
 
-                SKPoint prevCanvas = canvasPoints[0];
-                Waypoint prevWaypoint = Route[0];
-                for (int i = 1; i < canvasPoints.Length; i++)
+            SKPoint prevCanvas = canvasPoints[0];
+            Waypoint prevWaypoint = Route[0];
+            for (int i = 1; i < canvasPoints.Length; i++)
+            {
+                SKPoint curCanvas = canvasPoints[i];
+                Waypoint curWaypoint = Route[i];
+
+                Distance dist = Distance.Between(prevWaypoint.Location, curWaypoint.Location);
+
+                double displayDegs = Location.InitialBearingDegrees(prevWaypoint.Location, curWaypoint.Location);
+
+                string infoText = $"{dist.NatuticalMiles:0.0}nm {displayDegs:000}°";
+
+                MathHelper.AngleAndDistanceBetweenPoints(curCanvas.X, curCanvas.Y, prevCanvas.X, prevCanvas.Y, out float rads, out float pixDist);
+                float textWidth = _textPaint.MeasureText(infoText);
+                if (textWidth + 22f < pixDist)
                 {
-                    SKPoint curCanvas = canvasPoints[i];
-                    Waypoint curWaypoint = Route[i];
+                    canvas.Save();
 
-                    Distance dist = Distance.Between(prevWaypoint.Location, curWaypoint.Location);
+                    canvas.Translate(prevCanvas.X, prevCanvas.Y);
+                    canvas.RotateRadians(rads);
 
-                    MathHelper.AngleAndDistanceBetweenPoints(curCanvas.X, curCanvas.Y, prevCanvas.X, prevCanvas.Y, out float rads, out float pixDist);
-                    float displayDegs = MathHelper.RadsToDegs(MathHelper.CanvasAngle(rads));
+                    canvas.DrawRoundRect(14f, -7f, textWidth + 6f, 14f, 4f, 4f, _textBackgroundPaint);
+                    canvas.DrawText(infoText, 18f, 4f, _textPaint);
 
-                    string infoText = $"{dist.NatuticalMiles:0.0}nm {displayDegs:000}°";//: {prevCanvas.X:0} {prevCanvas.Y:0} to {curCanvas.X:0} {curCanvas.Y:0}";
-
-                    float textWidth = _textPaint.MeasureText(infoText);
-                    if (textWidth + 22f < pixDist)
-                    {
-                        canvas.Save();
-
-                        canvas.Translate(prevCanvas.X, prevCanvas.Y);
-                        canvas.RotateRadians(rads);
-
-                        canvas.DrawRoundRect(14f, -7f, textWidth + 6f, 14f, 4f, 4f, _textBackgroundPaint);
-                        canvas.DrawText(infoText, 18f, 4f, _textPaint);
-
-                        canvas.Restore();
-                    }
-                    //Console.WriteLine($"{i}. {prevCanvas} to {curCanvas} : {degs:000} {pixDist:0} ({dist.NatuticalMiles:0.0}nm)");
-
-                    prevCanvas = curCanvas;
-                    prevWaypoint = curWaypoint;
+                    canvas.Restore();
                 }
+                //Console.WriteLine($"{i}. {prevCanvas} to {curCanvas} : {degs:000} {pixDist:0} ({dist.NatuticalMiles:0.0}nm)");
 
-                foreach (SKPoint canvasPoint in canvasPoints)
-                {
-                    canvas.DrawCircle(canvasPoint, 7f, _waypointBackgroundPaint);
-                    canvas.DrawCircle(canvasPoint, 5.5f, _waypointForegroundPaint);
-                }
+                prevCanvas = curCanvas;
+                prevWaypoint = curWaypoint;
+            }
+
+            foreach (SKPoint canvasPoint in canvasPoints)
+            {
+                canvas.DrawCircle(canvasPoint, WaypointRadius, _waypointBackgroundPaint);
+                canvas.DrawCircle(canvasPoint, WaypointRadius - 1.5f, _waypointForegroundPaint);
             }
         }
 
         public Route Route { get; set; } = new Route();
+
+        public bool PrimaryMouseDown(CanvasRenderer renderer, double canvasX, double canvasY)
+        {
+            if (_canvasPoints is null || _canvasPoints.Length == 0)
+            {
+                return false;
+            }
+
+            // Check for existing points to drag
+            for (int i = 0; i < _canvasPoints.Length; i++)
+            {
+                SKPoint pt = _canvasPoints[i];
+
+                MathHelper.AngleAndDistanceBetweenPoints((float)canvasX, (float)canvasY, pt.X, pt.Y, out _, out float dist);
+                if (dist < WaypointRadius)
+                {
+                    _draggingIndex = i;
+
+                    return true;
+                }
+            }
+
+            // Check if point is on a line
+            SKPoint prev = _canvasPoints[0];
+            for (int i = 1; i < _canvasPoints.Length; i++)
+            {
+                SKPoint pt = _canvasPoints[i];
+
+                if (MathHelper.IsPointOnLine(prev.X, prev.Y, pt.X, pt.Y, canvasX, canvasY, WaypointRadius))
+                {
+                    renderer.AreaView.CanvasToLatLon(canvasX, canvasY, out double lat, out double lon);
+                    Route.InsertWaypoint(i, lat, lon);
+
+                    _draggingIndex = i;
+
+                    return true;
+                }
+
+                prev = pt;
+            }
+
+            return false;
+        }
+
+        public bool PrimaryMouseUp(CanvasRenderer renderer, double canvasX, double canvasY)
+        {
+            _draggingIndex = -1;
+
+            return false;
+        }
+
+        public bool MouseMoved(CanvasRenderer renderer, double canvasX, double canvasY)
+        {
+            if (_draggingIndex != -1)
+            {
+                renderer.AreaView.CanvasToLatLon(canvasX, canvasY, out double lat, out double lon);
+                Route[_draggingIndex].Latitude = lat;
+                Route[_draggingIndex].Longitude = lon;
+
+                return true;
+            }
+
+            return false;
+        }
     }
 }

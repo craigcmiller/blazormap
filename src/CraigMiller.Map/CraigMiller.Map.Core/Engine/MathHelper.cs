@@ -91,5 +91,31 @@
         public static double DegsToRads(double degrees) => degrees / 180.0 * Math.PI;
 
         public static float DegsToRads(float degrees) => degrees / 180f * MathF.PI;
+
+        public static bool IsPointOnLine(double xA, double yA, double xB, double yB, double xCheck, double yCheck, double tolerance)
+        {
+            double xDiff = xB - xA;
+            // Calculate slope and y intercept of the line
+            double m = xDiff == 0 ? double.PositiveInfinity : (yB - yA) / xDiff;
+            double b = yA - m * xA;
+
+            // Calculate expected y coordinate on the line for the check point
+            double yExpected = m * xCheck + b;
+
+            return Math.Abs(yExpected - yCheck) <= tolerance;
+        }
+
+        public static bool IsPointOnLine(float xA, float yA, float xB, float yB, float xCheck, float yCheck, float tolerance)
+        {
+            float xDiff = xB - xA;
+            // Calculate slope and y intercept of the line
+            float m = xDiff == 0 ? float.PositiveInfinity : (yB - yA) / xDiff;
+            float b = yA - m * xA;
+
+            // Calculate expected y coordinate on the line for the check point
+            float yExpected = m * xCheck + b;
+
+            return MathF.Abs(yExpected - yCheck) <= tolerance;
+        }
     }
 }

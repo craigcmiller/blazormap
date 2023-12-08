@@ -6,20 +6,19 @@
 
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container-fluid">
-        <a class="navbar-brand" href="#">Navbar w/ text</a>
+        <a class="navbar-brand" href="#">BlazorMap</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarText">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <li class="nav-item">
-                    <a class="nav-link" aria-current="page" href="#">Home</a>
+                <li class="nav-item px-1">
+                    <button class="btn btn-outline-dark" @onclick="ClearRoute">Clear Route</button>
+                </li>
+                <li class="nav-item px-1">
+                    <button class="btn btn-outline-dark" @onclick="NorthToTop">North to Top</button>
                 </li>
             </ul>
-            <span class="navbar-text">
-                @_map?.Engine.AreaView.CanvasWidth
-                @_map?.Engine.AreaView.CanvasHeight
-            </span>
         </div>
     </div>
 </nav>
@@ -54,7 +53,7 @@
 </div>
 
 @code {
-        Map? _map;
+    Map? _map;
 
     protected override void OnAfterRender(bool firstRender)
     {
@@ -104,11 +103,7 @@
 
     void AddRouteLayer(double lat, double lon)
     {
-        RenderableLayer? existingRouteLayer = _map!.Engine.Layers.FirstOrDefault(rl => rl.Layer is RouteLayer);
-        if (existingRouteLayer is not null)
-        {
-            _map!.Engine.Layers.Remove(existingRouteLayer);
-        }
+        _map!.Engine.RemoveLayers<RouteLayer>();
 
         RouteLayer routeLayer = new();
 
@@ -127,16 +122,17 @@
 
     void AnimateAlongRoute()
     {
-        RenderableLayer? existingRouteLayer = _map!.Engine.Layers.FirstOrDefault(rl => rl.Layer is RouteLayer);
+        RouteLayer? existingRouteLayer = _map!.Engine.GetLayers<RouteLayer>().FirstOrDefault();
         if (existingRouteLayer is null)
         {
             return;
         }
 
         TimeSpan timeBetweenPoints = TimeSpan.FromSeconds(3);
+        TimeSpan rotationDuration = TimeSpan.FromSeconds(1.5);
 
-        Route route = ((RouteLayer)existingRouteLayer.Layer).Route;
-        for (int i = 1; i < route.Count; i++)
+        Route route = existingRouteLayer.Route;
+        for (int i = 1; i < route.WaypointCount; i++)
         {
             Waypoint fromWaypoint = route[i - 1];
             Waypoint toWaypoint = route[i];
@@ -147,7 +143,7 @@
             {
                 _map!.Engine.EnqueueAnimation(
                     new CombinedAnimation(
-                        new ZoomAnimation(Tile.GetZoomScale(12), timeBetweenPoints, RateFunctions.Linear),
+                        new ZoomAnimation(Tile.GetZoomScale(11), timeBetweenPoints, RateFunctions.Linear),
                         new PanToLocationAnimation(fromWaypoint.Location, timeBetweenPoints, RateFunctions.AccelerateDecelerate),
                         new RotationAnimation(timeBetweenPoints, (float)bearingDegrees, RateFunctions.AccelerateDecelerate)));
             }
@@ -156,11 +152,10 @@
                 _map!.Engine.EnqueueAnimation(
                     new CombinedAnimation(
                         new PanToLocationAnimation(fromWaypoint.Location, timeBetweenPoints, RateFunctions.AccelerateDecelerate),
-                        new RotationAnimation(timeBetweenPoints, (float)bearingDegrees, RateFunctions.AccelerateDecelerate)));
-                //new DeferredAnimation(new RotationAnimation(timeBetweenPoints, (float)bearingDegrees, RateFunctions.AccelerateDecelerate), timeBetweenPoints / 2)));
+                        new DeferredAnimation(new RotationAnimation(rotationDuration, (float)bearingDegrees, RateFunctions.AccelerateDecelerate), timeBetweenPoints - rotationDuration)));
             }
 
-            if (i == route.Count - 1)
+            if (i == route.WaypointCount - 1)
             {
                 _map!.Engine.EnqueueAnimation(new PanToLocationAnimation(toWaypoint.Location, timeBetweenPoints, RateFunctions.AccelerateDecelerate));
             }
@@ -177,5 +172,15 @@
         }
 
         _map!.Engine.EnqueueAnimation(new RotationAnimation(TimeSpan.FromSeconds(2), rotation, RateFunctions.AccelerateDecelerate));
+    }
+
+    void ClearRoute()
+    {
+        _map!.Engine.GetLayers<RouteLayer>().FirstOrDefault()?.Route.Clear();
+    }
+
+    void NorthToTop()
+    {
+        _map!.Engine.EnqueueAnimation(new RotationAnimation(TimeSpan.FromSeconds(1), 0, RateFunctions.AccelerateDecelerate));
     }
 }

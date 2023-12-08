@@ -1,7 +1,3 @@
-export function showPrompt(message) {
-  return prompt(message, 'Type anything here');
-}
-
 export function fitCanvasToContainer(canvasId) {
     const canvas = document.getElementById(canvasId);
 
@@ -14,8 +10,17 @@ export function fitCanvasToContainer(canvasId) {
 
 // From https://github.com/Mapsui/Mapsui/issues/2042#issuecomment-1584980382
 export function disableMousewheelScroll(elementId) {
-    var element = document.getElementById(elementId);
+    const element = document.getElementById(elementId);
     if (element) {
         element.addEventListener('wheel', e => e.preventDefault(), { passive: false });
     }
 };
+
+export function disableContextMenu(elementId) {
+    const element = document.getElementById(elementId);
+    if (element) {
+        element.addEventListener("contextmenu", function (e) {
+            e.preventDefault();
+        });
+    }
+}

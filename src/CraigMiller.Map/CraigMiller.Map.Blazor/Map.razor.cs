@@ -27,6 +27,7 @@ public partial class Map : ComponentBase
         await using MapJsInterop mapJsInterop = new(JSRuntime!);
         await mapJsInterop.DisableMouseWheelScroll(_id);
         await mapJsInterop.FitToContainer(_id);
+        await mapJsInterop.DisableContextMenu(_id);
 
         if (CenterLatitude.HasValue && CenterLongitude.HasValue)
         {
@@ -125,6 +126,11 @@ public partial class Map : ComponentBase
     private void OnDoubleClick(MouseEventArgs args)
     {
         _engine.ZoomOn(args.OffsetX, args.OffsetY, 2.0, TimeSpan.FromSeconds(0.5));
+    }
+
+    private void OnContextMenu(MouseEventArgs args)
+    {
+        _engine.SecondaryMouseClick(args.OffsetX, args.OffsetY);
     }
 
     [Inject]

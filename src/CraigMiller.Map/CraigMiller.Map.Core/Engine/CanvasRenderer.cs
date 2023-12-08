@@ -1,12 +1,11 @@
-﻿using Microsoft.VisualBasic;
-using SkiaSharp;
-using System.Xml;
+﻿using SkiaSharp;
 
 namespace CraigMiller.Map.Core.Engine
 {
     public class CanvasRenderer
     {
-        readonly IList<RenderableLayer> _layersToEvict;
+        readonly IList<RenderableLayer> _layers = new List<RenderableLayer>();
+        readonly IList<RenderableLayer> _layersToEvict = new List<RenderableLayer>();
 
         public CanvasRenderer()
         {
@@ -16,25 +15,59 @@ namespace CraigMiller.Map.Core.Engine
                 ProjectedBottom = SmcProjection.WorldMin,
                 Zoom = 0.0001
             };
-
-            Layers = new List<RenderableLayer>();
-            _layersToEvict = new List<RenderableLayer>();
         }
 
         public GeoConverter AreaView { get; set; }
 
-        public IList<RenderableLayer> Layers { get; }
-
         public void AddLayer(ILayer layer)
         {
-            Layers.Add(new RenderableLayer(layer));
+            _layers.Add(new RenderableLayer(layer));
+        }
+
+        /// <summary>
+        /// Gets all layers of type <typeparamref name="T"/>
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public IEnumerable<T> GetLayers<T>() where T : ILayer
+            => _layers.Where(rl => rl.Layer is T).Select(rl => (T)rl.Layer);
+
+        /// <summary>
+        /// Removes all layers of type <typeparamref name="T"/>
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        public void RemoveLayers<T>() where T : ILayer
+        {
+            foreach (RenderableLayer layer in _layers.Where(rl => rl.Layer is T).ToArray())
+            {
+                _layers.Remove(layer);
+            }
+        }
+
+        /// <summary>
+        /// Gets the interactive layers in reverse order so that the newest will have event priority
+        /// </summary>
+        public IEnumerable<IInteractiveLayer> InteractiveLayers
+        {
+            get
+            {
+                for (int i = _layers.Count - 1; i >= 0; i--)
+                {
+                    RenderableLayer renderableLayer = _layers[i];
+
+                    if (renderableLayer.InteractiveLayer is not null)
+                    {
+                        yield return renderableLayer.InteractiveLayer;
+                    }
+                }
+            }
         }
 
         public void Draw(SKCanvas canvas)
         {
             DateTime drawStart = DateTime.UtcNow;
 
-            foreach (RenderableLayer renderableLayer in Layers)
+            foreach (RenderableLayer renderableLayer in _layers)
             {
                 if (renderableLayer.ShouldRender)
                 {
@@ -56,7 +89,7 @@ namespace CraigMiller.Map.Core.Engine
             {
                 foreach (RenderableLayer renderableLayer in _layersToEvict)
                 {
-                    Layers.Remove(renderableLayer);
+                    _layers.Remove(renderableLayer);
                 }
 
                 _layersToEvict.Clear();
