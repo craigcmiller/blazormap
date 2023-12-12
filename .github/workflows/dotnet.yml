@@ -14,13 +14,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - name: Setup .NET Core
+    - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
     - name: Install dependencies
       run: |
+        dotnet workload install wasm-tools
         cd src/CraigMiller.Map/CraigMiller.Map.Blazor.Example
         dotnet restore
       
@@ -29,6 +30,7 @@ jobs:
         cd src/CraigMiller.Map/CraigMiller.Map.Blazor.Example
         dotnet build --configuration Release --no-restore
         dotnet publish -c Release -o ../publish -r linux-x64 --self-contained true /p:UseAppHost=true
+        
     - name: Test
       run: |
         cd src/CraigMiller.Map/CraigMiller.Map.Core.Tests
