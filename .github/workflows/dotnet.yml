@@ -11,6 +11,7 @@ on:
     
 env:
   DOTNET_VERSION: 8.0.x
+  url: ${{ steps.deployment.outputs.page_url }}
   
 jobs:
   build:
@@ -31,13 +32,22 @@ jobs:
         cd src/CraigMiller.Map/CraigMiller.Map.Blazor.Example
         dotnet restore
         dotnet build --configuration Release --no-restore
-        dotnet publish -c Release -o ../publish
+        dotnet publish -c Release -o ../../../_site
         
     - name: Test
       run: |
         cd src/CraigMiller.Map/CraigMiller.Map.Core.Tests
         dotnet restore
         dotnet test --no-restore --verbosity normal
+        
+    - name: Fix permissions
+      run: |
+        chmod -c -R +rX "_site/" | while read line; do
+        echo "::warning title=Invalid file permissions automatically fixed::$line"
+        done
+        
+    - name: Upload Pages artifact
+      uses: actions/upload-pages-artifact@v2
         
     #- uses: azure/webapps-deploy@v2
     #  name: Deploy
