@@ -32,7 +32,7 @@ jobs:
       run: |
         cd src/CraigMiller.Map/CraigMiller.Map.Blazor.Example
         dotnet build --configuration Release --no-restore
-        dotnet publish -c Release -o ../publish -r linux-x64 --self-contained true /p:UseAppHost=true
+        dotnet publish -c Release -o ../publish
         
     - name: Test
       run: |
