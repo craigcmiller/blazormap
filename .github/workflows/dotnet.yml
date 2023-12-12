@@ -25,18 +25,18 @@ jobs:
     - name: Install dependencies
       run: |
         dotnet workload install wasm-tools
-        cd src/CraigMiller.Map/CraigMiller.Map.Blazor.Example
-        dotnet restore
       
     - name: Build
       run: |
         cd src/CraigMiller.Map/CraigMiller.Map.Blazor.Example
+        dotnet restore
         dotnet build --configuration Release --no-restore
         dotnet publish -c Release -o ../publish
         
     - name: Test
       run: |
         cd src/CraigMiller.Map/CraigMiller.Map.Core.Tests
+        dotnet restore
         dotnet test --no-restore --verbosity normal
         
     #- uses: azure/webapps-deploy@v2
