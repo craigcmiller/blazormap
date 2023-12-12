@@ -5,7 +5,7 @@ namespace CraigMiller.Map.Core.Routes
 {
     public class Route : IEnumerable<Waypoint>
     {
-        readonly IList<Waypoint> _waypoints;
+        readonly List<Waypoint> _waypoints;
 
         public Route()
         {
@@ -20,6 +20,11 @@ namespace CraigMiller.Map.Core.Routes
         public void AddWaypoint(double lat, double lon)
         {
             AddWaypoint(new Waypoint(lat, lon));
+        }
+
+        public void AddWaypoints(IEnumerable<Waypoint> waypoints)
+        {
+            _waypoints.AddRange(waypoints);
         }
 
         public void InsertWaypoint(int index, Waypoint waypoint)

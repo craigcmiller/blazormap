@@ -51,6 +51,8 @@
 
         public double Top => Bottom + Height;
 
+        public PointD Center => new PointD(Left + Width / 2.0, Bottom + Height / 2.0);
+
         /// <summary>
         /// Gets if this rect intersects with <paramref name="rect"/>
         /// </summary>

@@ -10,6 +10,8 @@ namespace CraigMiller.Map.Core.Routes
             Longitude = longitude;
         }
 
+        public Waypoint(Location location) : this(location.Latitude, location.Longitude) { }
+
         public double Latitude { get; set; }
 
         public double Longitude { get; set; }

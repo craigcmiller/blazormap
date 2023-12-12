@@ -1,4 +1,5 @@
 ﻿using CraigMiller.Map.Core.Engine;
+using System.Formats.Asn1;
 
 namespace CraigMiller.Map.Core.Animation
 {
@@ -32,5 +33,7 @@ namespace CraigMiller.Map.Core.Animation
 
             areaView.CenterLocation = new Location(_latDistance * ratioOfDistance + _initialLocation.Latitude, _lonDistance * ratioOfDistance + _initialLocation.Longitude);
         }
+
+        public Location ToLocation => _location;
     }
 }

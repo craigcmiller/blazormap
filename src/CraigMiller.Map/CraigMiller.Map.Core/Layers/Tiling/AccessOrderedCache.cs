@@ -5,13 +5,17 @@
         readonly IDictionary<TKey, CachedItem> _dict;
         readonly Action<TKey, TVal> _itemEvicted;
 
-        public AccessOrderedCache(Action<TKey, TVal> itemEvicted)
+        public AccessOrderedCache(Action<TKey, TVal> itemEvicted, int capacity)
         {
             _dict = new Dictionary<TKey, CachedItem>();
             _itemEvicted = itemEvicted;
+            Capacity = capacity;
         }
 
-        public int MaxSize { get; set; } = 512;
+        /// <summary>
+        /// Gets or sets the maximum number of items before the oldest is disposed of
+        /// </summary>
+        public int Capacity { get; set; }
 
         public bool TryGetValue(TKey key, out TVal? val)
         {
@@ -35,7 +39,7 @@
             {
                 _dict.Add(key, new CachedItem(val));
 
-                if (_dict.Count > MaxSize)
+                if (_dict.Count > Capacity)
                 {
                     KeyValuePair<TKey, CachedItem> toRemove = _dict.MinBy(kvp => kvp.Value.LastAccessed);
                     _dict.Remove(toRemove.Key);

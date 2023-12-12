@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CraigMiller.Map.Core", "Cra
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CraigMiller.Map.WebApi", "CraigMiller.Map.WebApi\CraigMiller.Map.WebApi.csproj", "{F94C5461-9B8E-41A3-BD47-0F20CC8481D9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CraigMiller.Map.Core.Tests", "CraigMiller.Map.Core.Tests\CraigMiller.Map.Core.Tests.csproj", "{28696E83-C73D-4E53-AE74-C40321A1C941}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CraigMiller.Map.Core.Tests", "CraigMiller.Map.Core.Tests\CraigMiller.Map.Core.Tests.csproj", "{28696E83-C73D-4E53-AE74-C40321A1C941}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

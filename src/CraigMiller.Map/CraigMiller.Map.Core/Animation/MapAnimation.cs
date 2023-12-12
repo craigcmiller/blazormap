@@ -6,6 +6,8 @@ namespace CraigMiller.Map.Core.Animation
     {
         DateTime _lastUpdate;
 
+        public event Action<MapAnimationEventArgs>? Began;
+
         public event Action<MapAnimationCompletedEventArgs>? Completed;
 
         public DateTime StartTime { get; private set; }
@@ -13,6 +15,8 @@ namespace CraigMiller.Map.Core.Animation
         internal virtual void BeginAnimation(GeoConverter areaView, DateTime start)
         {
             _lastUpdate = StartTime = start;
+
+            Began?.Invoke(new MapAnimationEventArgs(this));
         }
 
         public bool Update(GeoConverter areaView, DateTime currentTime)
@@ -29,15 +33,23 @@ namespace CraigMiller.Map.Core.Animation
         public abstract bool Update(GeoConverter areaView, double secondsSinceStart, double secondsSinceLastUpdate);
     }
 
-    public class MapAnimationCompletedEventArgs : EventArgs
+    public class MapAnimationEventArgs : EventArgs
     {
-        public MapAnimationCompletedEventArgs(MapAnimation animation, DateTime completedTime)
+        public MapAnimationEventArgs(MapAnimation animation)
         {
             Animation = animation;
-            CompletedTime = completedTime;
-        }   
+        }
 
         public MapAnimation Animation { get; }
+    }
+
+    public class MapAnimationCompletedEventArgs : MapAnimationEventArgs
+    {
+        public MapAnimationCompletedEventArgs(MapAnimation animation, DateTime completedTime)
+            :base(animation)
+        {
+            CompletedTime = completedTime;
+        }
 
         public DateTime CompletedTime { get; }
     }

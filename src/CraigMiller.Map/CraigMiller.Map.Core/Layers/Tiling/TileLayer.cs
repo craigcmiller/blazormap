@@ -18,7 +18,7 @@ namespace CraigMiller.Map.Core.Layers.Tiling
             {
                 bitmap.Dispose();
                 _loadingTiles.Remove(tile);
-            });
+            }, 1024);
             _paint = new SKPaint
             {
                 IsAntialias = true,
@@ -75,7 +75,7 @@ namespace CraigMiller.Map.Core.Layers.Tiling
                 ProjectedRect projected = tile.GetProjectedBounds(TileSize);
 
                 converter.ProjectedToCanvas(projected.Left, projected.Bottom, out double x1, out double y1);
-                converter.ProjectedToCanvas(projected.Left + projected.Width, projected.Bottom + projected.Height, out double x2, out double y2);
+                converter.ProjectedToCanvas(projected.Right, projected.Top, out double x2, out double y2);
 
                 canvas.DrawBitmap(bitmap, new SKRect((float)Math.Round(x1), (int)Math.Round(y2), (float)Math.Round(x2), (float)Math.Round(y1)), _paint);
             }

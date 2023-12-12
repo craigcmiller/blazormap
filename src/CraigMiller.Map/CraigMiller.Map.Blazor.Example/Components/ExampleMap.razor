@@ -1,0 +1,22 @@
+﻿@using System.Text
+@using System.Xml
+@using CraigMiller.Map.Core.Routes
+@using NetTopologySuite.IO
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container-fluid">
+        <div class="collapse navbar-collapse" id="navbarText">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item px-1">
+                    <button class="btn btn-outline-dark" @onclick="ClearRoute">Clear Route</button>
+                </li>
+                <li class="nav-item px-1">
+                    <button class="btn btn-outline-dark" @onclick="NorthToTop">North to Top</button>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<Map @ref="Map" Style="height:800px" CenterLatitude="0" CenterLongitude="0" />
+
+<InputFile OnChange="LoadFile" />

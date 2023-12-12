@@ -4,7 +4,7 @@ namespace CraigMiller.Map.Core.Engine
 {
     public class GeoConverter
     {
-        double _canvasWidth, _canvasHeight, _zoom;
+        double _canvasWidth, _canvasHeight, _zoom, _projectedWidth, _projectedHeight;
         float _rotationRadians;
 
         public GeoConverter()
@@ -42,9 +42,17 @@ namespace CraigMiller.Map.Core.Engine
         /// </summary>
         public double ProjectedBottom { get; set; }
 
-        public double ProjectedWidth { get; private set; }
+        public double ProjectedWidth
+        {
+            get => _projectedWidth;
+            set => Zoom = _canvasWidth / value;
+        }
 
-        public double ProjectedHeight { get; private set; }
+        public double ProjectedHeight
+        {
+            get => _projectedHeight;
+            set => Zoom = _canvasHeight / value;
+        }
 
         public double Zoom
         {
@@ -53,8 +61,8 @@ namespace CraigMiller.Map.Core.Engine
             {
                 _zoom = value;
 
-                ProjectedWidth = _canvasWidth / _zoom;
-                ProjectedHeight = _canvasHeight / _zoom;
+                _projectedWidth = _canvasWidth / _zoom;
+                _projectedHeight = _canvasHeight / _zoom;
             }
         }
 
@@ -64,7 +72,7 @@ namespace CraigMiller.Map.Core.Engine
             set
             {
                 _canvasWidth = value;
-                ProjectedWidth = value / Zoom;
+                _projectedWidth = value / Zoom;
             }
         }
 
@@ -74,7 +82,7 @@ namespace CraigMiller.Map.Core.Engine
             set
             {
                 _canvasHeight = value;
-                ProjectedHeight = value / Zoom;
+                _projectedHeight = value / Zoom;
             }
         }
 

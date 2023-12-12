@@ -4,25 +4,7 @@
 
 <PageTitle>BlazorMap</PageTitle>
 
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="#">BlazorMap</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarText">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <li class="nav-item px-1">
-                    <button class="btn btn-outline-dark" @onclick="ClearRoute">Clear Route</button>
-                </li>
-                <li class="nav-item px-1">
-                    <button class="btn btn-outline-dark" @onclick="NorthToTop">North to Top</button>
-                </li>
-            </ul>
-        </div>
-    </div>
-</nav>
-<Map @ref="_map" Style="height:800px" CenterLatitude="0" CenterLongitude="0" />
+<ExampleMap @ref="_exampleMap" />
 
 <div class="row g-3 mt-1">
     <div class="col-6">
@@ -53,13 +35,13 @@
 </div>
 
 @code {
-    Map? _map;
+    ExampleMap? _exampleMap;
 
     protected override void OnAfterRender(bool firstRender)
     {
         if (firstRender)
         {
-            _map!.AddDebugLayers();
+            _exampleMap!.Map!.AddDebugLayers();
         }
     }
 
@@ -83,7 +65,7 @@
 
         DurationAnimatedLayer<CircleMarkerLayer> animatedCircleMarker = CircleMarkerLayer.CreateAnimated(circleMarkerLayer, TimeSpan.FromSeconds(2), 8, 32);
         animatedCircleMarker.MaxRepetitions = 4;
-        _map!.Engine.AddLayer(animatedCircleMarker);
+        _exampleMap!.Map!.Engine.AddLayer(animatedCircleMarker);
 
         if (animate)
         {
@@ -92,18 +74,18 @@
             var pan = new PanToLocationAnimation(new Location(lat, lon), timespan, RateFunctions.AccelerateDecelerate);
             var zoom = new ZoomAnimation(0.1, TimeSpan.FromSeconds(2), RateFunctions.AccelerateDecelerate);
 
-            _map!.Engine.EnqueueAnimation(new CombinedAnimation(new DeferredAnimation(zoom, TimeSpan.FromSeconds(3)), pan));
+            _exampleMap!.Map!.Engine.EnqueueAnimation(new CombinedAnimation(new DeferredAnimation(zoom, TimeSpan.FromSeconds(3)), pan));
         }
         else
         {
-            _map!.Engine.Zoom = Tile.GetZoomScale(9);
-            _map!.Engine.Center = centerLoc;
+            _exampleMap!.Map!.Engine.Zoom = Tile.GetZoomScale(9);
+            _exampleMap!.Map!.Engine.Center = centerLoc;
         }
     }
 
     void AddRouteLayer(double lat, double lon)
     {
-        _map!.Engine.RemoveLayers<RouteLayer>();
+        _exampleMap!.Map!.Engine.RemoveLayers<RouteLayer>();
 
         RouteLayer routeLayer = new();
 
@@ -117,12 +99,12 @@
         routeLayer.Route.AddWaypoint(lat - 0.25, lon + 0.25);
         routeLayer.Route.AddWaypoint(lat, lon);
 
-        _map!.Engine.AddLayer(routeLayer);
+        _exampleMap!.Map!.Engine.AddLayer(routeLayer);
     }
 
     void AnimateAlongRoute()
     {
-        RouteLayer? existingRouteLayer = _map!.Engine.GetLayers<RouteLayer>().FirstOrDefault();
+        RouteLayer? existingRouteLayer = _exampleMap!.Map!.Engine.GetLayers<RouteLayer>().FirstOrDefault();
         if (existingRouteLayer is null)
         {
             return;
@@ -139,27 +121,52 @@
 
             double bearingDegrees = Location.InitialBearingDegrees(fromWaypoint.Location, toWaypoint.Location);
 
+            var zoomAnimation = new ZoomAnimation(Tile.GetZoomScale(11), timeBetweenPoints, RateFunctions.Linear);
+            var panToLocationAnimation = new PanToLocationAnimation(fromWaypoint.Location, timeBetweenPoints, RateFunctions.AccelerateDecelerate);
+            panToLocationAnimation.Began += AddMarkerToPanToLocationAnimation;
+
             if (i == 1)
             {
-                _map!.Engine.EnqueueAnimation(
+                _exampleMap!.Map!.Engine.EnqueueAnimation(
                     new CombinedAnimation(
-                        new ZoomAnimation(Tile.GetZoomScale(11), timeBetweenPoints, RateFunctions.Linear),
-                        new PanToLocationAnimation(fromWaypoint.Location, timeBetweenPoints, RateFunctions.AccelerateDecelerate),
-                        new RotationAnimation(timeBetweenPoints, (float)bearingDegrees, RateFunctions.AccelerateDecelerate)));
+                        zoomAnimation,
+                        panToLocationAnimation,
+                        new RotationAnimation(timeBetweenPoints, (float)bearingDegrees, RateFunctions.AccelerateDecelerate)
+                    ));
             }
             else
             {
-                _map!.Engine.EnqueueAnimation(
+                _exampleMap!.Map!.Engine.EnqueueAnimation(
                     new CombinedAnimation(
-                        new PanToLocationAnimation(fromWaypoint.Location, timeBetweenPoints, RateFunctions.AccelerateDecelerate),
-                        new DeferredAnimation(new RotationAnimation(rotationDuration, (float)bearingDegrees, RateFunctions.AccelerateDecelerate), timeBetweenPoints - rotationDuration)));
+                        zoomAnimation,
+                        panToLocationAnimation,
+                        new DeferredAnimation(new RotationAnimation(rotationDuration, (float)bearingDegrees, RateFunctions.AccelerateDecelerate), timeBetweenPoints - rotationDuration))
+                    );
             }
+
+            _exampleMap!.Map!.Engine.EnqueueAnimation(new PanToAreaAnimation(GeoRect.EncompassingLocations([fromWaypoint.Location, toWaypoint.Location]), TimeSpan.FromSeconds(2), RateFunctions.AccelerateDecelerate));
 
             if (i == route.WaypointCount - 1)
             {
-                _map!.Engine.EnqueueAnimation(new PanToLocationAnimation(toWaypoint.Location, timeBetweenPoints, RateFunctions.AccelerateDecelerate));
+                var finalPanToLocationAnimation = new PanToLocationAnimation(toWaypoint.Location, timeBetweenPoints, RateFunctions.AccelerateDecelerate);
+                finalPanToLocationAnimation.Began += AddMarkerToPanToLocationAnimation;
+                _exampleMap!.Map!.Engine.EnqueueAnimation(finalPanToLocationAnimation);
+                _exampleMap!.Map!.Engine.EnqueueAnimation(new RotationAnimation(TimeSpan.FromSeconds(1), 0f, RateFunctions.AccelerateDecelerate));
             }
         }
+    }
+
+    void AddMarkerToPanToLocationAnimation(MapAnimationEventArgs args)
+    {
+        var ptla = (PanToLocationAnimation)args.Animation;
+
+        var circleMarkerLayer = new CircleMarkerLayer
+            {
+                Locations = [ptla.ToLocation]
+            };
+        DurationAnimatedLayer<CircleMarkerLayer> animatedCircleMarker = CircleMarkerLayer.CreateAnimated(circleMarkerLayer, TimeSpan.FromSeconds(2), 8, 32);
+        animatedCircleMarker.MaxRepetitions = 4;
+        _exampleMap!.Map!.Engine.AddLayer(animatedCircleMarker);
     }
 
     string? _rotationDegreesStr;
@@ -171,16 +178,6 @@
             return;
         }
 
-        _map!.Engine.EnqueueAnimation(new RotationAnimation(TimeSpan.FromSeconds(2), rotation, RateFunctions.AccelerateDecelerate));
-    }
-
-    void ClearRoute()
-    {
-        _map!.Engine.GetLayers<RouteLayer>().FirstOrDefault()?.Route.Clear();
-    }
-
-    void NorthToTop()
-    {
-        _map!.Engine.EnqueueAnimation(new RotationAnimation(TimeSpan.FromSeconds(1), 0, RateFunctions.AccelerateDecelerate));
+        _exampleMap!.Map!.Engine.EnqueueAnimation(new RotationAnimation(TimeSpan.FromSeconds(2), rotation, RateFunctions.AccelerateDecelerate));
     }
 }
