@@ -1,5 +1,6 @@
 ﻿using CraigMiller.Map.Core.Animation;
 using CraigMiller.Map.Core.Layers;
+using SkiaSharp;
 
 namespace CraigMiller.Map.Core.Engine
 {
@@ -217,6 +218,20 @@ namespace CraigMiller.Map.Core.Engine
             AreaView.CanvasToLatLon(x, y, out double lat, out double lon);
 
             routeLayer.Route.AddWaypoint(lat, lon);
+        }
+
+        public void Draw(SKCanvas canvas)
+        {
+            double canvasWidth = AreaView.CanvasWidth;
+            double canvasHeight = AreaView.CanvasHeight;
+
+            BeginRotation(canvas);
+
+            UpdateAnimations();
+
+            DrawMapLayers(canvas);
+
+            DrawDataLayers(canvas, canvasWidth, canvasHeight);
         }
     }
 }

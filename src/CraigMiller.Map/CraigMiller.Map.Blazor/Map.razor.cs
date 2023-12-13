@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Components.Web;
 using CraigMiller.Map.Core.Engine;
 using CraigMiller.Map.Core.Layers;
 using CraigMiller.Map.Core.Layers.Tiling;
-using SkiaSharp;
+using CraigMiller.Map.Core.DataLayers;
 
 namespace CraigMiller.Map.Blazor;
 
@@ -40,7 +40,8 @@ public partial class Map : ComponentBase
         _engine.AddLayer(new BackgroundFillLayer());
         _engine.AddLayer(new TileLayer(new HttpTileLoader(HttpClient!)));
         _engine.AddLayer(new GridLineLayer());
-        _engine.AddLayer(new ScaleLayer());
+        _engine.AddDataLayer(new ScaleDataLayer());
+        _engine.AddDataLayer(new CompassDataLayer());
     }
 
     public void AddDebugLayers()
@@ -58,7 +59,7 @@ public partial class Map : ComponentBase
             }
         });
 
-        _engine.AddLayer(new DiagnosticsLayer());
+        _engine.AddDataLayer(new DiagnosticsDataLayer());
     }
 
     public void AddMapLayer(ILayer layer) => _engine.AddLayer(layer);
@@ -79,21 +80,15 @@ public partial class Map : ComponentBase
 
     public MapEngine Engine => _engine;
 
-    private void OnPaintSurface(SKPaintGLSurfaceEventArgs paintEventArgs)
+    void OnPaintSurface(SKPaintGLSurfaceEventArgs paintEventArgs)
     {
         _engine.AreaView.CanvasWidth = paintEventArgs.Info.Width;
         _engine.AreaView.CanvasHeight = paintEventArgs.Info.Height;
 
-        SKCanvas canvas = paintEventArgs.Surface.Canvas;
-
-        _engine.BeginRotation(canvas);
-
-        _engine.UpdateAnimations();
-
-        _engine.Draw(canvas);
+        _engine.Draw(paintEventArgs.Surface.Canvas);
     }
 
-    private void OnMouseDown(MouseEventArgs args)
+    void OnPointerDown(PointerEventArgs args)
     {
         switch (args.Button)
         {
@@ -103,12 +98,32 @@ public partial class Map : ComponentBase
         }
     }
 
-    private void OnMouseUp(MouseEventArgs args)
+    void OnMouseDown(MouseEventArgs args)
+    {
+        switch (args.Button)
+        {
+            case 0:
+                _engine.PrimaryMouseDown(args.OffsetX, args.OffsetY);
+                break;
+        }
+    }
+
+    void OnPointerUp(PointerEventArgs args)
     {
         _engine.PrimaryMouseUp(args.OffsetX, args.OffsetY);
     }
 
-    private void OnMouseMove(MouseEventArgs args)
+    void OnMouseUp(MouseEventArgs args)
+    {
+        _engine.PrimaryMouseUp(args.OffsetX, args.OffsetY);
+    }
+
+    void OnPointerMove(PointerEventArgs args)
+    {
+        _engine.PrimaryMouseMove(args.OffsetX, args.OffsetY);
+    }
+
+    void OnMouseMove(MouseEventArgs args)
     {
         if (args.Button == 0)
         {
@@ -116,19 +131,19 @@ public partial class Map : ComponentBase
         }
     }
 
-    private void OnMouseWheel(WheelEventArgs args)
+    void OnMouseWheel(WheelEventArgs args)
     {
         double zoomMultiplier = (args.DeltaY * -1.0) / 250.0 + 1.0;
 
         _engine.ZoomOn(args.OffsetX, args.OffsetY, zoomMultiplier, TimeSpan.FromMicroseconds(0.02));
     }
 
-    private void OnDoubleClick(MouseEventArgs args)
+    void OnDoubleClick(MouseEventArgs args)
     {
         _engine.ZoomOn(args.OffsetX, args.OffsetY, 2.0, TimeSpan.FromSeconds(0.5));
     }
 
-    private void OnContextMenu(MouseEventArgs args)
+    void OnContextMenu(MouseEventArgs args)
     {
         _engine.SecondaryMouseClick(args.OffsetX, args.OffsetY);
     }

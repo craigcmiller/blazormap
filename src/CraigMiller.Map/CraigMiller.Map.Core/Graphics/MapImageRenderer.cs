@@ -21,7 +21,7 @@ namespace CraigMiller.Map.Core.Graphics
 
             using var canvas = new SKCanvas(bitmap);
 
-            Engine.Draw(canvas);
+            Engine.DrawMapLayers(canvas);
 
             return bitmap;
         }

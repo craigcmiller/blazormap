@@ -6,6 +6,7 @@ namespace CraigMiller.Map.Core.Engine
     {
         readonly IList<RenderableLayer> _layers = new List<RenderableLayer>();
         readonly IList<RenderableLayer> _layersToEvict = new List<RenderableLayer>();
+        readonly IList<IDataLayer> _dataLayers = new List<IDataLayer>();
 
         public CanvasRenderer()
         {
@@ -63,7 +64,7 @@ namespace CraigMiller.Map.Core.Engine
             }
         }
 
-        public void Draw(SKCanvas canvas)
+        public void DrawMapLayers(SKCanvas canvas)
         {
             DateTime drawStart = DateTime.UtcNow;
 
@@ -93,6 +94,19 @@ namespace CraigMiller.Map.Core.Engine
                 }
 
                 _layersToEvict.Clear();
+            }
+        }
+
+        public void AddDataLayer(IDataLayer layer) => _dataLayers.Add(layer);
+
+        public void DrawDataLayers(SKCanvas canvas, double canvasWidth, double canvasHeight)
+        {
+            SKMatrix rotatedMatrix = canvas.TotalMatrix;
+            canvas.ResetMatrix();
+
+            foreach (IDataLayer dataLayer in _dataLayers)
+            {
+                dataLayer.DrawLayer(canvas, canvasWidth, canvasHeight, rotatedMatrix, AreaView);
             }
         }
 

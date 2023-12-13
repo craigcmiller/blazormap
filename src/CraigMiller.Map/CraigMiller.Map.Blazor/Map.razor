@@ -8,13 +8,20 @@
         OnPaintSurface="OnPaintSurface"
         IgnorePixelScaling="true"
         EnableRenderLoop="true"
-        @onmousedown="OnMouseDown"
-        @onmouseup="OnMouseUp"
-        @onmousemove="OnMouseMove"
+        @onpointerdown="OnPointerDown"
+        @onpointerup="OnPointerUp"
+        @onpointermove="OnPointerMove"
+        @onpointerleave="OnPointerUp"
         @onwheel="OnMouseWheel"
         @ondblclick="OnDoubleClick"
         @oncontextmenu="OnContextMenu"
         />
+
+        <!--
+    @onmousedown="OnMouseDown"
+    @onmouseup="OnMouseUp"
+    @onmousemove="OnMouseMove"
+        -->
 
         <!-- @onwheel:preventDefault="true"-->
 </div>

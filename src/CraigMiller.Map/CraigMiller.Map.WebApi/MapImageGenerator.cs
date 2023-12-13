@@ -1,4 +1,5 @@
-﻿using CraigMiller.Map.Core.Engine;
+﻿using CraigMiller.Map.Core.DataLayers;
+using CraigMiller.Map.Core.Engine;
 using CraigMiller.Map.Core.Graphics;
 using CraigMiller.Map.Core.Layers;
 using CraigMiller.Map.Core.Layers.Tiling;
@@ -36,7 +37,7 @@ namespace CraigMiller.Map.WebApi
                 SynchronousLoading = true
             });
             engine.AddLayer(new GridLineLayer());
-            engine.AddLayer(new ScaleLayer());
+            engine.AddDataLayer(new ScaleDataLayer());
 
             engine.AddLayer(new CircleMarkerLayer
             {
@@ -49,7 +50,7 @@ namespace CraigMiller.Map.WebApi
             }
             });
 
-            engine.AddLayer(new DiagnosticsLayer());
+            engine.AddDataLayer(new DiagnosticsDataLayer());
         }
     }
 }

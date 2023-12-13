@@ -53,7 +53,7 @@ namespace CraigMiller.Map.Core.Layers
             _renderer.AreaView = converter;
             for (int i = 0; i < 1; i++)
             {
-                _renderer.Draw(canvas);
+                _renderer.DrawMapLayers(canvas);
             }
 
             BitmapConverter? prevLastRender = _lastRender;

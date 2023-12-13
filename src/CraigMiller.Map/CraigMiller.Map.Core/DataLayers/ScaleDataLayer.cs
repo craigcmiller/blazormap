@@ -2,9 +2,9 @@
 using CraigMiller.Map.Core.Units;
 using SkiaSharp;
 
-namespace CraigMiller.Map.Core.Layers;
+namespace CraigMiller.Map.Core.DataLayers;
 
-public class ScaleLayer : ILayer
+public class ScaleDataLayer : IDataLayer
 {
     readonly SKPaint _backgroundPaint = new SKPaint
     {
@@ -34,10 +34,10 @@ public class ScaleLayer : ILayer
         FakeBoldText = true
     };
 
-    public void DrawLayer(SKCanvas canvas, GeoConverter converter)
+    public void DrawLayer(SKCanvas canvas, double canvasWidth, double canvasHeight, SKMatrix rotationMatrix, GeoConverter converter)
     {
-        float scaleY = (float)converter.CanvasHeight - 20f;
-        float scaleXEnd = (float)converter.CanvasWidth - 20f;
+        float scaleY = (float)canvasHeight - 20f;
+        float scaleXEnd = (float)canvasWidth - 20f;
         float scaleXStart = scaleXEnd - ScaleWidth;
 
         converter.CanvasToLatLon(scaleXStart, scaleY, out double startLat, out double startLon);
