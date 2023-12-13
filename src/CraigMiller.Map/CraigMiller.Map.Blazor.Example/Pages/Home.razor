@@ -1,0 +1,19 @@
+﻿@page "/"
+
+<h2>BlazorMap</h2>
+
+<p>BlazorMap is an open source map rendering component for Blazor written almost purely in C#.</p>
+
+<Map @ref="_map" Style="height:400px" CenterLatitude="51" CenterLongitude="0" />
+
+@code {
+    Map? _map;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _map!.AddDefaultLayers();
+        }
+    }
+}
