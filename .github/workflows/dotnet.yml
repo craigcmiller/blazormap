@@ -12,6 +12,10 @@ on:
 env:
   DOTNET_VERSION: 8.0.x
   #url: ${{ steps.deployment.outputs.page_url }}
+
+permissions:
+  id-token: write
+  pages: write
   
 jobs:
   build:
