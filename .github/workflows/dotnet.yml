@@ -46,10 +46,12 @@ jobs:
         name: github-pages
         path: _site
         retention-days: 1
-          
-    #- uses: azure/webapps-deploy@v2
-    #  name: Deploy
-    #  with:
-    #    app-name: ${{ env.AZURE_WEBAPP_NAME }}
-    #    publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
-    #    package: '${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/dotnet-webapp'
+    
+    - name: Deploy GitHub Pages site
+      uses: actions/deploy-pages@v3.0.1
+      with:
+        # GitHub token
+        #token: # default is ${{ github.token }}
+        artifact_name: github-pages
+        # Is this attempting to deploy a pull request as a GitHub Pages preview site? (NOTE: This feature is only in alpha currently and is not available to the public!)
+        preview: false
