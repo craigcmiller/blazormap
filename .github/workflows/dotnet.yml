@@ -48,7 +48,7 @@ jobs:
       uses: actions/upload-pages-artifact@v2.0.0
       with:
         name: github-pages
-        path: _site
+        path: _site/wwwroot
         retention-days: 1
     
     - name: Deploy GitHub Pages site
