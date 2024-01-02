@@ -1,4 +1,4 @@
-﻿namespace CraigMiller.Map.Core.Engine
+﻿namespace CraigMiller.Map.Core.Geo
 {
     /// <summary>
     /// Geographic rectangle bounded by north, west, south and east latitudes and longitudes

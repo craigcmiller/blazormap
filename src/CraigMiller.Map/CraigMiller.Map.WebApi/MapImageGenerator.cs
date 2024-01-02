@@ -1,5 +1,6 @@
 ﻿using CraigMiller.Map.Core.DataLayers;
 using CraigMiller.Map.Core.Engine;
+using CraigMiller.Map.Core.Geo;
 using CraigMiller.Map.Core.Graphics;
 using CraigMiller.Map.Core.Layers;
 using CraigMiller.Map.Core.Layers.Tiling;

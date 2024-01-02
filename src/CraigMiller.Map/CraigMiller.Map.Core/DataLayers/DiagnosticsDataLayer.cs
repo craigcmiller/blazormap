@@ -1,4 +1,5 @@
 ﻿using CraigMiller.Map.Core.Engine;
+using CraigMiller.Map.Core.Geo;
 using SkiaSharp;
 
 namespace CraigMiller.Map.Core.DataLayers;
@@ -14,12 +15,7 @@ public class DiagnosticsDataLayer : IDataLayer
 
     public void DrawLayer(SKCanvas canvas, double canvasWidth, double canvasHeight, SKMatrix rotationMatrix, GeoConverter converter)
     {
-        converter.CanvasToLatLon(0, 0, out double topLat, out double leftLon);
-
-        canvas.DrawText($"{topLat:0.00} {leftLon:0.00}", new SKPoint(20, 20), _textPaint);
-
-        converter.ProjectedToCanvas(converter.ProjectedLeft + converter.ProjectedWidth / 2.0, converter.ProjectedBottom, out float x, out float y);
-        //Console.WriteLine($"{x}, {y}");
-        canvas.DrawText($"PRJY", new SKPoint(x, y), _textPaint);
+        converter.CanvasToLatLon(converter.CanvasWidth / 2.0, converter.CanvasHeight / 2.0, out double centerLat, out double centerLon);
+        canvas.DrawText(new Location(centerLat, centerLon).ToDegreesMinutesSecondsString(), new SKPoint(20, 20), _textPaint);
     }
 }

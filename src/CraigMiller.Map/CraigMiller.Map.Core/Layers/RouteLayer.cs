@@ -1,4 +1,5 @@
 ﻿using CraigMiller.Map.Core.Engine;
+using CraigMiller.Map.Core.Geo;
 using CraigMiller.Map.Core.Routes;
 using CraigMiller.Map.Core.Units;
 using SkiaSharp;

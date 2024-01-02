@@ -1,4 +1,5 @@
 ﻿using CraigMiller.Map.Core.Engine;
+using CraigMiller.Map.Core.Geo;
 using System.Formats.Asn1;
 
 namespace CraigMiller.Map.Core.Animation

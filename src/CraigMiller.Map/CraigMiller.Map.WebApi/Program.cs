@@ -1,7 +1,5 @@
 using CraigMiller.Map.WebApi;
-using Microsoft.AspNetCore;
 using SkiaSharp;
-using System.Net.NetworkInformation;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateSlimBuilder(args);
@@ -29,7 +27,7 @@ mapGroupBuilder.MapGet(
     "/{width},{height}/{lonCenter},{latCenter}/{zoom}", 
     async (HttpResponse response, int width, int height, double lonCenter, double latCenter, int zoom) =>
 {
-    using SKBitmap bitmap = MapImageGenerator.Generate(width, height, new CraigMiller.Map.Core.Engine.Location(latCenter, lonCenter), zoom);
+    using SKBitmap bitmap = MapImageGenerator.Generate(width, height, new CraigMiller.Map.Core.Geo.Location(latCenter, lonCenter), zoom);
 
     using SKData data = bitmap.Encode(SKEncodedImageFormat.Png, 100);
     using Stream dataStream = data.AsStream();

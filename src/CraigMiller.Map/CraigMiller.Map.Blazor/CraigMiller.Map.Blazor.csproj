@@ -7,7 +7,8 @@
 		<!--
 		<WasmEnableThreads>true</WasmEnableThreads>
 		-->
-		<!--<RunAOTCompilation>true</RunAOTCompilation>-->
+		<RunAOTCompilation>true</RunAOTCompilation>
+		<OptimizationPreference>Speed</OptimizationPreference>
 	</PropertyGroup>
 
 	<ItemGroup>

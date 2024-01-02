@@ -6,6 +6,7 @@ using CraigMiller.Map.Core.Engine;
 using CraigMiller.Map.Core.Layers;
 using CraigMiller.Map.Core.Layers.Tiling;
 using CraigMiller.Map.Core.DataLayers;
+using CraigMiller.Map.Core.Geo;
 
 namespace CraigMiller.Map.Blazor;
 

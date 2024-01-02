@@ -1,4 +1,6 @@
-﻿namespace CraigMiller.Map.Core.Engine
+﻿using System.Runtime.CompilerServices;
+
+namespace CraigMiller.Map.Core.Engine
 {
     public static class MathHelper
     {

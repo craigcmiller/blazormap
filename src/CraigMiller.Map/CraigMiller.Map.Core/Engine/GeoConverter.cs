@@ -1,4 +1,5 @@
-﻿using CraigMiller.Map.Core.Layers.Tiling;
+﻿using CraigMiller.Map.Core.Geo;
+using CraigMiller.Map.Core.Layers.Tiling;
 
 namespace CraigMiller.Map.Core.Engine
 {
