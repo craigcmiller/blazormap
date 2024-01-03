@@ -32,16 +32,6 @@ jobs:
       run: |
         dotnet workload install wasm-tools
     
-    - name: NuGet-Build
-      run: |
-        echo $NUGET_TOKEN
-        cd src/CraigMiller.Map/CraigMiller.Map.Blazor
-        dotnet restore
-        dotnet build --configuration Release --no-restore
-        dotnet pack --output .
-        ls -l
-        dotnet nuget push *.nupkg -k $NUGET_TOKEN -s https://api.nuget.org/v3/index.json
-    
     - name: Test
       run: |
         cd src/CraigMiller.Map/CraigMiller.Map.Core.Tests
@@ -78,4 +68,11 @@ jobs:
         artifact_name: github-pages
         # Is this attempting to deploy a pull request as a GitHub Pages preview site? (NOTE: This feature is only in alpha currently and is not available to the public!)
         preview: false
-
+    
+    - name: NuGet-Build
+      run: |
+        cd src/CraigMiller.Map/CraigMiller.Map.Blazor
+        dotnet restore
+        dotnet build --configuration Release --no-restore
+        dotnet pack --output .
+        dotnet nuget push *.nupkg -k $NUGET_TOKEN -s https://api.nuget.org/v3/index.json
