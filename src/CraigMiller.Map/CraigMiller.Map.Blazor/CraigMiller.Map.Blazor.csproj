@@ -14,7 +14,7 @@
 		<Title>BlazorMap</Title>
 		<Description>Open source layered map component for Blazor</Description>
 		<PackageProjectUrl>https://craigcmiller.github.io/blazormap/</PackageProjectUrl>
-		<VersionPrefix>0.5.1</VersionPrefix>
+		<VersionPrefix>0.5.2</VersionPrefix>
 	</PropertyGroup>
 
 	<ItemGroup>
