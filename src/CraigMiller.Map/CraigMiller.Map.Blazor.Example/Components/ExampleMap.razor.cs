@@ -2,6 +2,7 @@
 using CraigMiller.Map.Core.Geo;
 using CraigMiller.Map.Core.Layers;
 using CraigMiller.Map.Core.Routes;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using NetTopologySuite.IO;
 using System.Xml;
@@ -50,5 +51,8 @@ namespace CraigMiller.Map.Blazor.Example.Components
 
             Map!.Engine.EnqueueAnimation(new PanToAreaAnimation(GeoRect.EncompassingLocations(routeWaypoints), TimeSpan.FromSeconds(3), RateFunctions.AccelerateDecelerate));
         }
+
+        [Parameter]
+        public string? SourceLink { get; set; }
     }
 }

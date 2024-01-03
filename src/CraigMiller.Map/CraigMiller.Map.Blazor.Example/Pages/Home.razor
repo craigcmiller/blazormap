@@ -1,10 +1,33 @@
 ﻿@page "/"
+@using CraigMiller.Map.Core.Layers.Tiling
 
 <h2>BlazorMap</h2>
 
-<p>BlazorMap is an open source map rendering component for Blazor written almost purely in C#.</p>
+<p class="alert alert-secondary">BlazorMap is an open source map rendering component for Blazor written almost purely in C#.</p>
 
-<Map @ref="_map" Style="height:400px" CenterLatitude="51" CenterLongitude="0" />
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-xs-12 col-md-6">
+            <Map @ref="_map" Style="height:500px" />
+        </div>
+        <div class="col-xs-12 col-md-6 card">
+            <pre>@CodeExample.Simple</pre>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-3">
+    <div class="card-body">
+        <h5 class="card-title">Features</h5>
+        <ul>
+            <li>Smooth panning and zooming</li>
+            <li>Routes - right click to add a waypoint</li>
+            <li>HTTP tiles - default is OpenStreetMap</li>
+            <li>Animations</li>
+            <li>Extensible layers</li>
+        </ul>
+    </div>
+</div>
 
 @code {
     Map? _map;
@@ -14,6 +37,15 @@
         if (firstRender)
         {
             _map!.AddDefaultLayers();
+
+            _map!.Engine.Zoom = Tile.GetZoomScale(2);
+
+            _map!.Engine.EnqueueAnimation(
+                new DeferredAnimation(
+                    new CombinedAnimation(
+                        new ZoomAnimation(Tile.GetZoomScale(8), TimeSpan.FromSeconds(2), RateFunctions.Linear),
+                        new PanToLocationAnimation(new Core.Geo.Location(51, 0), TimeSpan.FromSeconds(2), RateFunctions.AccelerateDecelerate)),
+                TimeSpan.FromSeconds(1)));
         }
     }
 }
