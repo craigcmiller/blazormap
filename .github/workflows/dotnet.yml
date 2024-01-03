@@ -76,4 +76,5 @@ jobs:
         dotnet restore
         dotnet build --configuration Release --no-restore
         dotnet pack
-        dotnet nuget push foo.nupkg -k $NUGET_TOKEN
+        ls -l
+        dotnet nuget push CraigMiller.Map.Blazor.nupkg -k $NUGET_TOKEN -s https://api.nuget.org/v3/index.json
