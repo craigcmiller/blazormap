@@ -69,7 +69,15 @@ jobs:
         # Is this attempting to deploy a pull request as a GitHub Pages preview site? (NOTE: This feature is only in alpha currently and is not available to the public!)
         preview: false
     
-    - name: NuGet-Build
+    - name: NuGet-Build-Core
+      run: |
+        cd src/CraigMiller.Map/CraigMiller.Map.Core
+        dotnet restore
+        dotnet build --configuration Release --no-restore
+        dotnet pack --output .
+        dotnet nuget push *.nupkg -k $NUGET_TOKEN -s https://api.nuget.org/v3/index.json
+    
+    - name: NuGet-Build-BlazorMap
       run: |
         cd src/CraigMiller.Map/CraigMiller.Map.Blazor
         dotnet restore
