@@ -9,6 +9,12 @@
 		-->
 		<RunAOTCompilation>true</RunAOTCompilation>
 		<OptimizationPreference>Speed</OptimizationPreference>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		
+		<Title>BlazorMap</Title>
+		<Description>Open source layered map component for Blazor</Description>
+		<PackageProjectUrl>https://craigcmiller.github.io/blazormap/</PackageProjectUrl>
+		<VersionPrefix>0.5.0</VersionPrefix>
 	</PropertyGroup>
 
 	<ItemGroup>

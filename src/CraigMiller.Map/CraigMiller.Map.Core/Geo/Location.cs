@@ -11,7 +11,7 @@ namespace CraigMiller.Map.Core.Geo;
 public readonly struct Location
 {
     [StringSyntax(StringSyntaxAttribute.Regex)]
-    const string DegreesMinutesSecondsRegex = @"\d";
+    const string DecimalDegreesRegexPattern = @"(?<lat>\-?\d+\.\d+)\s*,?\s*(?<lon>\-?\d+\.\d+)";
 
     public readonly double Latitude, Longitude;
 
@@ -38,8 +38,14 @@ public readonly struct Location
 
     public static bool TryParse(string str, out Location location)
     {
-        location = new Location();
+        Match decimalDegreesMatch= Regex.Match(str, DecimalDegreesRegexPattern);
+        if (decimalDegreesMatch.Success)
+        {
+            location = new Location(double.Parse(decimalDegreesMatch.Groups["lat"].Value), double.Parse(decimalDegreesMatch.Groups["lon"].Value));
+            return true;
+        }
 
+        location = new Location(double.NaN, double.NaN);
         return false;
     }
 
@@ -62,10 +68,6 @@ public readonly struct Location
     public bool IsValid => Latitude >= -90.0 && Latitude <= 90.0 && Longitude >= -180.0 && Longitude <= 180.0;
 
     public override string ToString() => $"{Latitude} {Longitude}";
-
-    public CardinalDirection CardinalLatitude => Latitude < 0.0 ? CardinalDirection.South : CardinalDirection.North;
-
-    public CardinalDirection CardinalLongitude => Longitude < 0.0 ? CardinalDirection.West : CardinalDirection.East;
 
     public PartLocation PartLatitude => new PartLocation(LocationPartType.Latitude, Latitude);
 

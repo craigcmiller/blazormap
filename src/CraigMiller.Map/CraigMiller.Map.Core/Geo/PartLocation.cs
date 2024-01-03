@@ -51,13 +51,13 @@ public readonly struct PartLocation
         string degreesStr = Degrees.ToString(DegreesFormat);
         string minutesStr = Minutes.ToString("00");
         string secondsStr = Seconds.ToString("00" + (secondsDecimalPlaces > 0 ? ".".PadRight(secondsDecimalPlaces + 1, '0') : string.Empty));
-        char cardinalStr = CardinalDirectionToChar(CardinalDirection);
+        char cardinalChar = CardinalDirectionToChar(CardinalDirection);
 
         if (useSymbols)
         {
-            return $"{degreesStr}° {minutesStr}' {secondsStr}\" {cardinalStr}";
+            return $"{degreesStr}° {minutesStr}' {secondsStr}\" {cardinalChar}";
         }
 
-        return $"{degreesStr} {minutesStr} {secondsStr} {cardinalStr}";
+        return $"{degreesStr} {minutesStr} {secondsStr} {cardinalChar}";
     }
 }
