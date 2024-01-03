@@ -12,6 +12,7 @@ on:
 env:
   DOTNET_VERSION: 8.0.x
   #url: ${{ steps.deployment.outputs.page_url }}
+  NUGET_TOKEN: ${{ secrets.BLAZORMAP_NUGET }}
 
 permissions:
   id-token: write
@@ -30,7 +31,13 @@ jobs:
     - name: Install dependencies
       run: |
         dotnet workload install wasm-tools
-      
+    
+    - name: Test
+      run: |
+        cd src/CraigMiller.Map/CraigMiller.Map.Core.Tests
+        dotnet restore
+        dotnet test --no-restore --verbosity normal
+    
     - name: Build
       run: |
         cd src/CraigMiller.Map/CraigMiller.Map.Blazor.Example
@@ -41,22 +48,11 @@ jobs:
     # https://thomasgauvin.com/blog/blazor-swa-with-subpath
     # changes the base-tag in index.html from '/' to 'blazormap' to match GitHub Pages repository subdirectory
     - name: Change base-tag in index.html from / to blazormap
-      run: sed -i 's/<base href="\/" \/>/<base href="\/blazormap\/" \/>/g' _site/wwwroot/index.html
-    
-    # copy index.html to 404.html to serve the same file when a file is not found
-    - name: copy index.html to 404.html
-      run: cp _site/wwwroot/index.html _site/wwwroot/404.html
-
-    # add .nojekyll file to tell GitHub pages to not treat this as a Jekyll project. (Allow files and folders starting with an underscore)
-    - name: Add .nojekyll file
-      run: touch _site/wwwroot/.nojekyll
-        
-    - name: Test
       run: |
-        cd src/CraigMiller.Map/CraigMiller.Map.Core.Tests
-        dotnet restore
-        dotnet test --no-restore --verbosity normal
-        
+        sed -i 's/<base href="\/" \/>/<base href="\/blazormap\/" \/>/g' _site/wwwroot/index.html
+        cp _site/wwwroot/index.html _site/wwwroot/404.html
+        touch _site/wwwroot/.nojekyll
+    
     - name: Upload GitHub Pages artifact
       uses: actions/upload-pages-artifact@v2.0.0
       with:
@@ -72,3 +68,12 @@ jobs:
         artifact_name: github-pages
         # Is this attempting to deploy a pull request as a GitHub Pages preview site? (NOTE: This feature is only in alpha currently and is not available to the public!)
         preview: false
+
+    - name: NuGet-Build
+      run: |
+        echo $NUGET_TOKEN
+        cd src/CraigMiller.Map/CraigMiller.Map.Blazor
+        dotnet restore
+        dotnet build --configuration Release --no-restore
+        dotnet pack
+        dotnet nuget push foo.nupkg -k $NUGET_TOKEN
