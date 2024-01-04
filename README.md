@@ -3,8 +3,10 @@ BlazorMap is a map renderer Blazor component that utilises the SkiaSharp graphic
 
 ![blazormap](https://github.com/craigcmiller/blazormap/actions/workflows/dotnet.yml/badge.svg?branch=main)
 
-## Example site
-https://craigcmiller.github.io/blazormap/
+## More information
+* [Example site](https://craigcmiller.github.io/blazormap/)
+* [Github](https://github.com/craigcmiller/blazormap)
+* [NuGet](https://www.nuget.org/packages/CraigMiller.Map.Blazor/)
 
 ## Features
 * Extensible layering system with a number of pre-built layers
@@ -14,5 +16,36 @@ https://craigcmiller.github.io/blazormap/
   * Grid line
   * Scale
   * Marker
+  * Compass
 * Rotatable map
 * Animation system including a number of predefined animations
+
+## Getting started
+
+### 1. Install NuGet package
+```
+dotnet add package CraigMiller.Map.Blazor
+```
+
+### 2. Make sure HttpClient is added to your DI services
+Add the following to Program.cs (if you have not already done so)
+```cs
+builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+```
+
+### 3. Add a map to your Blazor component
+```cs
+<Map @ref="Map" Style="height:600px" />
+
+@code {
+    Map? _map;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _map!.AddDefaultLayers();
+        }
+    }
+}
+```

@@ -1,0 +1,54 @@
+﻿@page "/mylocation"
+@using CraigMiller.Map.Core.Geo
+@using CraigMiller.Map.Core.Layers.Tiling
+
+<h2>My Location</h2>
+
+<p class="alert alert-secondary">Example tracking the current location using <a href="https://www.nuget.org/packages/Blazor.Geolocation">Blazor.Geolocation</a>.</p>
+
+<MapWithCode @ref="_mapWithCode" Code="@CodeExample.MyLocation" />
+
+<p class="alert alert-info mt-3">Location: @_lastLocationStr</p>
+
+@code {
+    MapWithCode? _mapWithCode;
+    string _lastLocationStr = "Waiting...";
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            Map map = _mapWithCode!.Map!;
+
+            map.AddDefaultLayers();
+
+            map.Engine.Zoom = Tile.GetZoomScale(7);
+
+            if (GeolocationService is not null)
+            {
+                GeolocationService.WatchPosition(pos =>
+                {
+                    Location location = new Location(pos.Coords.Latitude, pos.Coords.Longitude);
+
+                    map.Engine.EnqueueAnimation(new PanToLocationAnimation(location, TimeSpan.FromSeconds(2), RateFunctions.AccelerateDecelerate));
+
+                    var circleMarkerLayer = new CircleMarkerLayer
+                    {
+                        Locations = [location]
+                    };
+                    DurationAnimatedLayer<CircleMarkerLayer> animatedCircleMarker = CircleMarkerLayer.CreateAnimated(circleMarkerLayer, TimeSpan.FromSeconds(1), 4, 24);
+                    animatedCircleMarker.MaxRepetitions = int.MaxValue;
+
+                    map.Engine.RemoveLayers<DurationAnimatedLayer<CircleMarkerLayer>>();
+                    map.Engine.AddLayer(animatedCircleMarker);
+
+                    _lastLocationStr = location.ToDegreesMinutesSecondsString();
+                    StateHasChanged();
+                });
+            }
+        }
+    }
+
+    [Inject]
+    IGeolocationService? GeolocationService { get; set; }
+}

@@ -14,8 +14,17 @@
 		<Title>BlazorMap</Title>
 		<Description>Open source layered map component for Blazor</Description>
 		<PackageProjectUrl>https://craigcmiller.github.io/blazormap/</PackageProjectUrl>
-		<VersionPrefix>0.5.2</VersionPrefix>
+		<VersionPrefix>0.5.3</VersionPrefix>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<RepositoryUrl>https://github.com/craigcmiller/blazormap</RepositoryUrl>
 	</PropertyGroup>
+
+	<ItemGroup>
+	  <None Include="..\..\..\README.md">
+	    <Pack>True</Pack>
+	    <PackagePath>\</PackagePath>
+	  </None>
+	</ItemGroup>
 
 	<ItemGroup>
 		<SupportedPlatform Include="browser" />

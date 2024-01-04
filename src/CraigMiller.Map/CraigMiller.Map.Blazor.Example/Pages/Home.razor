@@ -5,16 +5,7 @@
 
 <p class="alert alert-secondary">BlazorMap is an open source map rendering component for Blazor written almost purely in C#.</p>
 
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-xs-12 col-md-6">
-            <Map @ref="_map" Style="height:500px" />
-        </div>
-        <div class="col-xs-12 col-md-6 card">
-            <pre>@CodeExample.Simple</pre>
-        </div>
-    </div>
-</div>
+<MapWithCode @ref="_mapWithCode" Code="@CodeExample.Simple" />
 
 <div class="card mt-3">
     <div class="card-body">
@@ -30,17 +21,19 @@
 </div>
 
 @code {
-    Map? _map;
+    MapWithCode? _mapWithCode;
 
     protected override void OnAfterRender(bool firstRender)
     {
         if (firstRender)
         {
-            _map!.AddDefaultLayers();
+            Map map = _mapWithCode!.Map!;
 
-            _map!.Engine.Zoom = Tile.GetZoomScale(2);
+            map!.AddDefaultLayers();
 
-            _map!.Engine.EnqueueAnimation(
+            map!.Engine.Zoom = Tile.GetZoomScale(2);
+
+            map!.Engine.EnqueueAnimation(
                 new DeferredAnimation(
                     new CombinedAnimation(
                         new ZoomAnimation(Tile.GetZoomScale(8), TimeSpan.FromSeconds(2), RateFunctions.Linear),
