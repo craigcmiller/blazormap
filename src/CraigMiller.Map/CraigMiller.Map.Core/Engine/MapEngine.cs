@@ -1,4 +1,5 @@
 ﻿using CraigMiller.Map.Core.Animation;
+using CraigMiller.Map.Core.DataLayers;
 using CraigMiller.Map.Core.Layers;
 using SkiaSharp;
 
@@ -204,6 +205,27 @@ namespace CraigMiller.Map.Core.Engine
         /// Gets or sets the time an inertial pan happens for
         /// </summary>
         public TimeSpan InertialPanDuration { get; set; } = TimeSpan.FromSeconds(1.0);
+
+        public void PrimaryMouseClick(double x, double y)
+        {
+            ReverseRotatePoint(x, y, out double rotX, out double rotY);
+
+            foreach (IInteractiveLayer interactiveLayer in InteractiveLayers)
+            {
+                double clickX = rotX, clickY = rotY;
+
+                if (interactiveLayer is ButtonInteractiveDataLayer)
+                {
+                    clickX = x;
+                    clickY = y;
+                }
+
+                if (interactiveLayer.MouseClicked(this, clickX, clickY))
+                {
+                    return;
+                }
+            }
+        }
 
         public void SecondaryMouseClick(double x, double y)
         {

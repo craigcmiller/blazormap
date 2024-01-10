@@ -1,8 +1,8 @@
 ﻿namespace CraigMiller.Map.Core.Engine
 {
-    public interface IInteractiveLayer : ILayer
+    public interface IInteractiveLayer
     {
-        bool Clicked(CanvasRenderer renderer, double canvasX, double canvasY) => false;
+        bool MouseClicked(CanvasRenderer renderer, double canvasX, double canvasY) => false;
 
         bool PrimaryMouseDown(CanvasRenderer renderer, double canvasX, double canvasY) => false;
 

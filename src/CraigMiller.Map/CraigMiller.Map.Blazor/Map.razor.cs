@@ -27,13 +27,16 @@ public partial class Map : ComponentBase
 
         await using MapJsInterop mapJsInterop = new(JSRuntime!);
         await mapJsInterop.DisableMouseWheelScroll(_id);
-        await mapJsInterop.FitToContainer(_id);
         await mapJsInterop.DisableContextMenu(_id);
 
-        if (CenterLatitude.HasValue && CenterLongitude.HasValue)
-        {
-            _engine.Center = new Location(CenterLatitude.Value, CenterLongitude.Value);
-        }
+        await mapJsInterop.FitToContainer(_id);
+
+        ElementBoundingRect boundingRect = await mapJsInterop.GetElementBoundingClientRect(_id);
+        _engine.AreaView.CanvasWidth = boundingRect.Width;
+        _engine.AreaView.CanvasHeight = boundingRect.Height;
+
+        _engine.Zoom = Tile.GetZoomScale(InitalZoomLevel);
+        _engine.Center = InitialLatitude.HasValue && InitialLongitude.HasValue ? new Location(InitialLatitude.Value, InitialLongitude.Value) : Location.NullIsland;
     }
 
     public void AddDefaultLayers()
@@ -43,6 +46,43 @@ public partial class Map : ComponentBase
         _engine.AddLayer(new GridLineLayer());
         _engine.AddDataLayer(new ScaleDataLayer());
         _engine.AddDataLayer(new CompassDataLayer());
+
+        AddZoomButtons();
+    }
+
+    public void AddZoomButtons()
+    {
+        const float width = 26f;
+
+        var zoomInButton = new ButtonInteractiveDataLayer
+        {
+            X = 10,
+            Y = 30,
+            Text = "+",
+            Alpha = 200,
+            MinWidth = width,
+        };
+        zoomInButton.Clicked += (_, _) =>
+        {
+            _engine.ZoomOn((_engine.AreaView.CanvasWidth - _engine.CanvasWidthOffset) / 2.0, (_engine.AreaView.CanvasHeight - _engine.CanvasHeightOffset) / 2.0, 2.0, TimeSpan.FromSeconds(1));
+        };
+
+        _engine.AddDataLayer(zoomInButton);
+
+        var zoomOutButton = new ButtonInteractiveDataLayer
+        {
+            X = 10,
+            Y = 65,
+            Text = "-",
+            Alpha = 200,
+            MinWidth = width,
+        };
+        zoomOutButton.Clicked += (_, _) =>
+        {
+            _engine.ZoomOn((_engine.AreaView.CanvasWidth - _engine.CanvasWidthOffset) / 2.0, (_engine.AreaView.CanvasHeight - _engine.CanvasHeightOffset) / 2.0, 0.5, TimeSpan.FromSeconds(1));
+        };
+
+        _engine.AddDataLayer(zoomOutButton);
     }
 
     public void AddDebugLayers()
@@ -52,9 +92,9 @@ public partial class Map : ComponentBase
         _engine.AddLayer(new CircleMarkerLayer
         {
             Locations = new List<Location> {
-                new Location(51,0),
-                new Location(80,-170),
-                new Location(80,170),
+                new Location(51, 0),
+                new Location(80, -170),
+                new Location(80, 170),
                 new Location(-80, -170),
                 new Location(-80, 170)
             }
@@ -139,6 +179,11 @@ public partial class Map : ComponentBase
         _engine.ZoomOn(args.OffsetX, args.OffsetY, zoomMultiplier, TimeSpan.FromMicroseconds(0.02));
     }
 
+    void OnClick(MouseEventArgs args)
+    {
+        _engine.PrimaryMouseClick(args.OffsetX, args.OffsetY);
+    }
+
     void OnDoubleClick(MouseEventArgs args)
     {
         _engine.ZoomOn(args.OffsetX, args.OffsetY, 2.0, TimeSpan.FromSeconds(0.5));
@@ -158,10 +203,10 @@ public partial class Map : ComponentBase
     protected override void OnParametersSet()
     {
         base.OnParametersSet();
-
-        if (CenterLatitude.HasValue && CenterLongitude.HasValue)
+        
+        if (InitialLatitude.HasValue && InitialLongitude.HasValue)
         {
-            _engine.Center = new Location(CenterLatitude.Value, CenterLongitude.Value);
+            _engine.Center = new Location(InitialLatitude.Value, InitialLongitude.Value);
         }
     }
 
@@ -169,8 +214,11 @@ public partial class Map : ComponentBase
     public string? Style { get; set; }
 
     [Parameter]
-    public double? CenterLatitude { get; set; }
+    public double? InitialLatitude { get; set; }
 
     [Parameter]
-    public double? CenterLongitude { get; set; }
+    public double? InitialLongitude { get; set; }
+
+    [Parameter]
+    public int InitalZoomLevel { get; set; } = 4;
 }

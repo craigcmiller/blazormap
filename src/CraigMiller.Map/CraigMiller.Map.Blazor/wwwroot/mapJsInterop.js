@@ -24,3 +24,12 @@ export function disableContextMenu(elementId) {
         });
     }
 }
+
+export function getElementBoundingClientRect(elementId) {
+    const element = document.getElementById(elementId);
+    if (element) {
+        return element.getBoundingClientRect();
+    }
+
+    return null;
+}

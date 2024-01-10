@@ -7,7 +7,7 @@ namespace CraigMiller.Map.Core.Engine
     {
         readonly IList<RenderableLayer> _layers = new List<RenderableLayer>();
         readonly IList<RenderableLayer> _layersToEvict = new List<RenderableLayer>();
-        readonly IList<IDataLayer> _dataLayers = new List<IDataLayer>();
+        readonly IList<RenderableDataLayer> _dataLayers = new List<RenderableDataLayer>();
 
         public CanvasRenderer()
         {
@@ -47,17 +47,27 @@ namespace CraigMiller.Map.Core.Engine
         }
 
         /// <summary>
-        /// Gets the interactive layers in reverse order so that the newest will have event priority
+        /// Gets the interactive layers in reverse order so that the most recently added will have event priority
         /// </summary>
         public IEnumerable<IInteractiveLayer> InteractiveLayers
         {
             get
             {
+                for (int i = _dataLayers.Count - 1; i >= 0; i--)
+                {
+                    RenderableDataLayer renderableDataLayer = _dataLayers[i];
+
+                    if (renderableDataLayer.InteractiveLayer is not null && renderableDataLayer.ShouldRender)
+                    {
+                        yield return renderableDataLayer.InteractiveLayer;
+                    }
+                }
+
                 for (int i = _layers.Count - 1; i >= 0; i--)
                 {
                     RenderableLayer renderableLayer = _layers[i];
 
-                    if (renderableLayer.InteractiveLayer is not null)
+                    if (renderableLayer.InteractiveLayer is not null && renderableLayer.ShouldRender)
                     {
                         yield return renderableLayer.InteractiveLayer;
                     }
@@ -98,16 +108,19 @@ namespace CraigMiller.Map.Core.Engine
             }
         }
 
-        public void AddDataLayer(IDataLayer layer) => _dataLayers.Add(layer);
+        public void AddDataLayer(IDataLayer layer) => _dataLayers.Add(new RenderableDataLayer(layer));
 
         public void DrawDataLayers(SKCanvas canvas, double canvasWidth, double canvasHeight)
         {
             SKMatrix rotatedMatrix = canvas.TotalMatrix;
             canvas.ResetMatrix();
 
-            foreach (IDataLayer dataLayer in _dataLayers)
+            foreach (RenderableDataLayer dataLayer in _dataLayers)
             {
-                dataLayer.DrawLayer(canvas, canvasWidth, canvasHeight, rotatedMatrix, AreaView);
+                if (dataLayer.ShouldRender)
+                {
+                    dataLayer.Layer.DrawLayer(canvas, canvasWidth, canvasHeight, rotatedMatrix, AreaView);
+                }
             }
         }
 
@@ -137,7 +150,6 @@ namespace CraigMiller.Map.Core.Engine
                 ReverseRotationMatrix = reveresedMatrix;
             }
 
-            //canvas.Translate(-halfWidth, -halfHeight);
             canvas.Translate((float)-maxDimension / 2f, (float)-maxDimension / 2f);
         }
 

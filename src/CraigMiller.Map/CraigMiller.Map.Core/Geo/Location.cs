@@ -14,6 +14,11 @@ public readonly struct Location
 
     public readonly double Latitude, Longitude;
 
+    /// <summary>
+    /// Gets a location at 0 latitude and 0 longitude
+    /// </summary>
+    public static Location NullIsland => new Location(0, 0);
+
     public static double InitialBearingDegrees(Location pointA, Location pointB)
     {
         double lat1 = MathHelper.DegsToRads(pointA.Latitude);
@@ -64,6 +69,9 @@ public readonly struct Location
         Longitude = longitude;
     }
 
+    /// <summary>
+    /// Gets if the location is within valid latitude and longitude values
+    /// </summary>
     public bool IsValid => Latitude >= -90.0 && Latitude <= 90.0 && Longitude >= -180.0 && Longitude <= 180.0;
 
     public override string ToString() => $"{Latitude} {Longitude}";

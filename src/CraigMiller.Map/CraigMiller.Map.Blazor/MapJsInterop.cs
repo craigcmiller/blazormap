@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 namespace CraigMiller.Map.Blazor
@@ -30,6 +31,12 @@ namespace CraigMiller.Map.Blazor
             await module.InvokeVoidAsync("disableContextMenu", elementId);
         }
 
+        public async ValueTask<ElementBoundingRect> GetElementBoundingClientRect(string elementId)
+        {
+            var module = await _moduleTask.Value;
+            return await module.InvokeAsync<ElementBoundingRect>("getElementBoundingClientRect", elementId);
+        }
+
         public async ValueTask DisposeAsync()
         {
             if (_moduleTask.IsValueCreated)
@@ -38,5 +45,24 @@ namespace CraigMiller.Map.Blazor
                 await module.DisposeAsync();
             }
         }
+    }
+
+    public sealed class ElementBoundingRect
+    {
+        public double X { get; set; }
+
+        public double Y { get; set; }
+
+        public double Width { get; set; }
+
+        public double Height { get; set; }
+
+        public double Top { get; set; }
+
+        public double Bottom { get; set; }
+
+        public double Right { get; set; }
+
+        public double Left { get; set; }
     }
 }

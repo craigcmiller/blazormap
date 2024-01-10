@@ -6,7 +6,7 @@ using SkiaSharp;
 
 namespace CraigMiller.Map.Core.Layers
 {
-    public class RouteLayer : IInteractiveLayer
+    public class RouteLayer : ILayer, IInteractiveLayer
     {
         const float WaypointRadius = 7f;
 
