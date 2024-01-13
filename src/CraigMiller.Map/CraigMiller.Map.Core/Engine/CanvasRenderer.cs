@@ -113,7 +113,8 @@ namespace CraigMiller.Map.Core.Engine
         public void DrawDataLayers(SKCanvas canvas, double canvasWidth, double canvasHeight)
         {
             SKMatrix rotatedMatrix = canvas.TotalMatrix;
-            canvas.ResetMatrix();
+            //canvas.ResetMatrix();
+            canvas.Restore();
 
             foreach (RenderableDataLayer dataLayer in _dataLayers)
             {

@@ -7,6 +7,7 @@ using CraigMiller.Map.Core.Layers;
 using CraigMiller.Map.Core.Layers.Tiling;
 using CraigMiller.Map.Core.DataLayers;
 using CraigMiller.Map.Core.Geo;
+using SkiaSharp;
 
 namespace CraigMiller.Map.Blazor;
 
@@ -15,6 +16,7 @@ public partial class Map : ComponentBase
     SKGLView? _view;
     readonly string _id = $"{nameof(Map).ToLower()}_{Guid.NewGuid().ToString().Replace("-", "")}";
     readonly MapEngine _engine;
+    double _devicePixelRatio;
 
     public Map()
     {
@@ -26,6 +28,9 @@ public partial class Map : ComponentBase
         base.OnInitialized();
 
         await using MapJsInterop mapJsInterop = new(JSRuntime!);
+
+        _devicePixelRatio = await mapJsInterop.GetDevicePixelRatio();
+
         await mapJsInterop.DisableMouseWheelScroll(_id);
         await mapJsInterop.DisableContextMenu(_id);
 
@@ -123,23 +128,18 @@ public partial class Map : ComponentBase
 
     void OnPaintSurface(SKPaintGLSurfaceEventArgs paintEventArgs)
     {
-        _engine.AreaView.CanvasWidth = paintEventArgs.Info.Width;
-        _engine.AreaView.CanvasHeight = paintEventArgs.Info.Height;
+        //Console.WriteLine($"{_devicePixelRatio} - {paintEventArgs.Info.Width}, {paintEventArgs.Info.Height}, {paintEventArgs.RawInfo.Width}, {paintEventArgs.RawInfo.Height}");
 
-        _engine.Draw(paintEventArgs.Surface.Canvas);
+        _engine.AreaView.CanvasWidth = paintEventArgs.Info.Width / _devicePixelRatio;
+        _engine.AreaView.CanvasHeight = paintEventArgs.Info.Height / _devicePixelRatio;
+
+        SKCanvas canvas = paintEventArgs.Surface.Canvas;
+        canvas.Scale((float)_devicePixelRatio);
+
+        _engine.Draw(canvas);
     }
 
     void OnPointerDown(PointerEventArgs args)
-    {
-        switch (args.Button)
-        {
-            case 0:
-                _engine.PrimaryMouseDown(args.OffsetX, args.OffsetY);
-                break;
-        }
-    }
-
-    void OnMouseDown(MouseEventArgs args)
     {
         switch (args.Button)
         {
@@ -154,22 +154,9 @@ public partial class Map : ComponentBase
         _engine.PrimaryMouseUp(args.OffsetX, args.OffsetY);
     }
 
-    void OnMouseUp(MouseEventArgs args)
-    {
-        _engine.PrimaryMouseUp(args.OffsetX, args.OffsetY);
-    }
-
     void OnPointerMove(PointerEventArgs args)
     {
         _engine.PrimaryMouseMove(args.OffsetX, args.OffsetY);
-    }
-
-    void OnMouseMove(MouseEventArgs args)
-    {
-        if (args.Button == 0)
-        {
-            _engine.PrimaryMouseMove(args.OffsetX, args.OffsetY);
-        }
     }
 
     void OnMouseWheel(WheelEventArgs args)

@@ -37,6 +37,12 @@ namespace CraigMiller.Map.Blazor
             return await module.InvokeAsync<ElementBoundingRect>("getElementBoundingClientRect", elementId);
         }
 
+        public async ValueTask<double> GetDevicePixelRatio()
+        {
+            var module = await _moduleTask.Value;
+            return await module.InvokeAsync<double>("getDevicePixelRatio");
+        }
+
         public async ValueTask DisposeAsync()
         {
             if (_moduleTask.IsValueCreated)

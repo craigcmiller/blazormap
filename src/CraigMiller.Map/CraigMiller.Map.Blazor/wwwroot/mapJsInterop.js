@@ -33,3 +33,7 @@ export function getElementBoundingClientRect(elementId) {
 
     return null;
 }
+
+export function getDevicePixelRatio() {
+    return window.devicePixelRatio;
+}
