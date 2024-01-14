@@ -31,8 +31,20 @@ public partial class Map : ComponentBase
 
         _devicePixelRatio = await mapJsInterop.GetDevicePixelRatio();
 
-        await mapJsInterop.DisableMouseWheelScroll(_id);
-        await mapJsInterop.DisableContextMenu(_id);
+        await mapJsInterop.DisableEventListeners(
+            _id,
+            "wheel",
+            "contextmenu",
+            "click",
+            "dblclick",
+            "pointerdown",
+            "pointerup",
+            "mousedown",
+            "mouseup",
+            "touchstart",
+            "touchend",
+            "touchmove",
+            "touchcancel");
 
         await mapJsInterop.FitToContainer(_id);
 
@@ -144,41 +156,41 @@ public partial class Map : ComponentBase
         switch (args.Button)
         {
             case 0:
-                _engine.PrimaryMouseDown(args.OffsetX, args.OffsetY);
+                _engine.PrimaryMouseDown(args.OffsetX * _devicePixelRatio, args.OffsetY * _devicePixelRatio);
                 break;
         }
     }
 
     void OnPointerUp(PointerEventArgs args)
     {
-        _engine.PrimaryMouseUp(args.OffsetX, args.OffsetY);
+        _engine.PrimaryMouseUp(args.OffsetX * _devicePixelRatio, args.OffsetY * _devicePixelRatio);
     }
 
     void OnPointerMove(PointerEventArgs args)
     {
-        _engine.PrimaryMouseMove(args.OffsetX, args.OffsetY);
+        _engine.PrimaryMouseMove(args.OffsetX * _devicePixelRatio, args.OffsetY * _devicePixelRatio);
     }
 
     void OnMouseWheel(WheelEventArgs args)
     {
         double zoomMultiplier = (args.DeltaY * -1.0) / 250.0 + 1.0;
 
-        _engine.ZoomOn(args.OffsetX, args.OffsetY, zoomMultiplier, TimeSpan.FromMicroseconds(0.02));
+        _engine.ZoomOn(args.OffsetX * _devicePixelRatio, args.OffsetY * _devicePixelRatio, zoomMultiplier, TimeSpan.FromSeconds(0.02));
     }
 
     void OnClick(MouseEventArgs args)
     {
-        _engine.PrimaryMouseClick(args.OffsetX, args.OffsetY);
+        _engine.PrimaryMouseClick(args.OffsetX * _devicePixelRatio, args.OffsetY * _devicePixelRatio);
     }
 
     void OnDoubleClick(MouseEventArgs args)
     {
-        _engine.ZoomOn(args.OffsetX, args.OffsetY, 2.0, TimeSpan.FromSeconds(0.5));
+        _engine.ZoomOn(args.OffsetX * _devicePixelRatio, args.OffsetY * _devicePixelRatio, 2.0, TimeSpan.FromSeconds(0.5));
     }
 
     void OnContextMenu(MouseEventArgs args)
     {
-        _engine.SecondaryMouseClick(args.OffsetX, args.OffsetY);
+        _engine.SecondaryMouseClick(args.OffsetX * _devicePixelRatio, args.OffsetY * _devicePixelRatio);
     }
 
     [Inject]

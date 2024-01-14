@@ -19,16 +19,14 @@ namespace CraigMiller.Map.Blazor
             await module.InvokeVoidAsync("fitCanvasToContainer", id);
         }
 
-        public async ValueTask DisableMouseWheelScroll(string elementId)
+        public async ValueTask DisableEventListeners(string elementId, params string[] listenerNames)
         {
             var module = await _moduleTask.Value;
-            await module.InvokeVoidAsync("disableMousewheelScroll", elementId);
-        }
 
-        public async ValueTask DisableContextMenu(string elementId)
-        {
-            var module = await _moduleTask.Value;
-            await module.InvokeVoidAsync("disableContextMenu", elementId);
+            foreach (string listenerName in listenerNames)
+            {
+                await module.InvokeVoidAsync("disableEventListener", elementId, listenerName);
+            }
         }
 
         public async ValueTask<ElementBoundingRect> GetElementBoundingClientRect(string elementId)

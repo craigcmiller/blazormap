@@ -8,20 +8,10 @@ export function fitCanvasToContainer(canvasId) {
     canvas.height = canvas.offsetHeight;
 }
 
-// From https://github.com/Mapsui/Mapsui/issues/2042#issuecomment-1584980382
-export function disableMousewheelScroll(elementId) {
+export function disableEventListener(elementId, listenerName) {
     const element = document.getElementById(elementId);
     if (element) {
-        element.addEventListener('wheel', e => e.preventDefault(), { passive: false });
-    }
-};
-
-export function disableContextMenu(elementId) {
-    const element = document.getElementById(elementId);
-    if (element) {
-        element.addEventListener("contextmenu", function (e) {
-            e.preventDefault();
-        });
+        element.addEventListener(listenerName, e => e.preventDefault());
     }
 }
 
