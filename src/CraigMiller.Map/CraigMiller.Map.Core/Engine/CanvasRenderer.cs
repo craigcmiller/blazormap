@@ -113,7 +113,6 @@ namespace CraigMiller.Map.Core.Engine
         public void DrawDataLayers(SKCanvas canvas, double canvasWidth, double canvasHeight)
         {
             SKMatrix rotatedMatrix = canvas.TotalMatrix;
-            //canvas.ResetMatrix();
             canvas.Restore();
 
             foreach (RenderableDataLayer dataLayer in _dataLayers)
@@ -131,6 +130,8 @@ namespace CraigMiller.Map.Core.Engine
 
         public void BeginRotation(SKCanvas canvas)
         {
+            canvas.Scale(AreaView.PixelScale);
+
             canvas.Save();
 
             double canvasWidth = AreaView.CanvasWidth;
@@ -176,7 +177,7 @@ namespace CraigMiller.Map.Core.Engine
 
         public void ReverseRotatePoint(double x, double y, out double rotatedX, out double rotatedY)
         {
-            SKPoint pt = ReverseRotationMatrix.MapPoint((float)x, (float)y);
+            SKPoint pt = ReverseRotationMatrix.MapPoint((float)x * AreaView.PixelScale, (float)y * AreaView.PixelScale);
             rotatedX = pt.X;
             rotatedY = pt.Y;
 

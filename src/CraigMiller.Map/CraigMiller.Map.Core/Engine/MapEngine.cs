@@ -242,8 +242,10 @@ namespace CraigMiller.Map.Core.Engine
             routeLayer.Route.AddWaypoint(lat, lon);
         }
 
-        public void Draw(SKCanvas canvas)
+        public void Draw(SKCanvas canvas, float scale)
         {
+            AreaView.PixelScale = scale;
+
             double canvasWidth = AreaView.CanvasWidth;
             double canvasHeight = AreaView.CanvasHeight;
 

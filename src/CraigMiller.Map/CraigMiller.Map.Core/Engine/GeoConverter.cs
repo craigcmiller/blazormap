@@ -197,13 +197,18 @@ namespace CraigMiller.Map.Core.Engine
         public float RotationRadians
         {
             get => _rotationRadians;
-            set => _rotationRadians = MathHelper.NormaliseAngle(value);
+            internal set => _rotationRadians = MathHelper.NormaliseAngle(value);
         }
 
         public float RotationDegrees
         {
             get => MathHelper.RadsToDegs(_rotationRadians);
-            set => RotationRadians = MathHelper.DegsToRads(value);
+            internal set => RotationRadians = MathHelper.DegsToRads(value);
         }
+
+        /// <summary>
+        /// Gets the pixel scaling multiplier for HiDPI displays
+        /// </summary>
+        public float PixelScale { get; internal set; } = 1f;
     }
 }

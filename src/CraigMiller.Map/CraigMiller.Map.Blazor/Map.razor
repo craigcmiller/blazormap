@@ -1,4 +1,6 @@
-﻿<div
+﻿@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+
+<div
     class="map"
     style=@Style
 >
@@ -8,13 +10,16 @@
         @ref="_view"
         OnPaintSurface="OnPaintSurface"
         EnableRenderLoop="true"
-        @onpointerdown="OnPointerDown"
-        @onpointerup="OnPointerUp"
-        @onpointermove="OnPointerMove"
-        @onpointerleave="OnPointerUp"
+        @onmousedown="OnMouseDown"
+        @onmouseup="OnMouseUp"
+        @onmousemove="OnMouseMove"
+        @onmouseleave="OnMouseUp"
         @onwheel="OnMouseWheel"
         @onclick="OnClick"
         @ondblclick="OnDoubleClick"
         @oncontextmenu="OnContextMenu"
+        @ontouchstart="OnTouchStart"
+        @ontouchend="OnTouchEnd"
+        @ontouchmove="OnTouchMove"
         />
 </div>

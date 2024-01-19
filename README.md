@@ -1,5 +1,5 @@
 # BlazorMap
-BlazorMap is a map renderer Blazor component that utilises the SkiaSharp graphics API.
+BlazorMap is a map renderer Blazor WebAssembly component that utilises the SkiaSharp graphics API.
 
 ![blazormap](https://github.com/craigcmiller/blazormap/actions/workflows/dotnet.yml/badge.svg?branch=main)
 
@@ -33,9 +33,9 @@ Add the following to Program.cs (if you have not already done so)
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 ```
 
-### 3. Add a map to your Blazor component
+### 3. Add a map to your Blazor component or page
 ```cs
-<Map @ref="Map" Style="height:600px" />
+<Map @ref="_map" Style="height:600px" />
 
 @code {
     Map? _map;
