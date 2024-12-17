@@ -8,12 +8,12 @@
 		<Title>CraigMiller.Map.Core</Title>
 		<Description>Open source layered map engine using SkiaSharp</Description>
 		<PackageProjectUrl>https://craigcmiller.github.io/blazormap/</PackageProjectUrl>
-		<VersionPrefix>0.5.7</VersionPrefix>
+		<VersionPrefix>0.6.0</VersionPrefix>
 		<RepositoryUrl>https://github.com/craigcmiller/blazormap</RepositoryUrl>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="SkiaSharp" Version="2.88.6" />
+		<PackageReference Include="SkiaSharp" Version="2.88.7" />
 	</ItemGroup>
 
 </Project>

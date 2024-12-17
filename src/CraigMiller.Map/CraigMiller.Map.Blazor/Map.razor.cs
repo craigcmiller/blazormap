@@ -219,7 +219,7 @@ public partial class Map : ComponentBase
             _engine.PrimaryMouseDown(offsetX, offsetY);
         }
 
-        //Console.WriteLine($"TS {args.Touches.Length} {args.TargetTouches.Length} {args.ChangedTouches.Length}, {args.Detail}, {_activeTouches.Count}");
+        Console.WriteLine($"TS {args.Touches.Length} {args.TargetTouches.Length} {args.ChangedTouches.Length}, {args.Detail}, {_activeTouches.Count}");
     }
 
     void OnTouchEnd(TouchEventArgs args)
@@ -265,12 +265,12 @@ public partial class Map : ComponentBase
             _recentTaps.Remove(recentTap);
         }
 
-        //Console.WriteLine($"TE {args.Touches.Length} {args.TargetTouches.Length} {args.ChangedTouches.Length}, {args.Detail}, {_activeTouches.Count}");
+        Console.WriteLine($"TE {args.Touches.Length} {args.TargetTouches.Length} {args.ChangedTouches.Length}, {args.Detail}, {_activeTouches.Count}");
     }
 
     void OnTouchMove(TouchEventArgs args)
     {
-        //Console.WriteLine($"TM {args.Touches.Length} {args.TargetTouches.Length} {args.ChangedTouches.Length}, {args.Detail}, {_activeTouches.Count}");
+        Console.WriteLine($"TM {args.Touches.Length} {args.TargetTouches.Length} {args.ChangedTouches.Length}, {args.Detail}, {_activeTouches.Count}");
 
         if (args.ChangedTouches.Length == 1)
         {
