@@ -5,12 +5,14 @@ name: Build blazormap
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
   pull_request:
-    branches: [ "main" ]
+    branches:
+      - main
     
 env:
-  DOTNET_VERSION: 8.0.x
+  DOTNET_VERSION: 9.0.x
   #url: ${{ steps.deployment.outputs.page_url }}
   NUGET_TOKEN: ${{ secrets.BLAZORMAP_NUGET }}
 
