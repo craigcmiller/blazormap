@@ -14,7 +14,7 @@
 		<Title>BlazorMap</Title>
 		<Description>Open source layered map component for Blazor</Description>
 		<PackageProjectUrl>https://craigcmiller.github.io/blazormap/</PackageProjectUrl>
-		<VersionPrefix>0.5.7</VersionPrefix>
+		<VersionPrefix>0.6.0</VersionPrefix>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<RepositoryUrl>https://github.com/craigcmiller/blazormap</RepositoryUrl>
 	</PropertyGroup>
@@ -31,11 +31,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.1" />
 		<PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="8.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="8.0.0" />
-		<PackageReference Include="SkiaSharp.Views.Blazor" Version="2.88.6" />
-		<PackageReference Include="SkiaSharp" Version="2.88.6" />
+		<PackageReference Include="SkiaSharp.Views.Blazor" Version="2.88.7" />
+		<PackageReference Include="SkiaSharp" Version="2.88.7" />
 	</ItemGroup>
 
 	<ItemGroup>
