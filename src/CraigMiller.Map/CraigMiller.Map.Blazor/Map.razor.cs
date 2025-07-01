@@ -146,15 +146,6 @@ public partial class Map : ComponentBase
 
         SKCanvas canvas = paintEventArgs.Surface.Canvas;
 
-        var paint = new SKPaint
-        {
-            Color = SKColors.Red,
-            Style = SKPaintStyle.StrokeAndFill
-        };
-
-        canvas.DrawLine(100, 100, 400, 100, paint);
-        canvas.DrawLine(100, 120, 400, 120, paint);
-
         _engine.Draw(canvas, (float)_devicePixelRatio);
     }
 
@@ -219,7 +210,7 @@ public partial class Map : ComponentBase
             _engine.PrimaryMouseDown(offsetX, offsetY);
         }
 
-        Console.WriteLine($"TS {args.Touches.Length} {args.TargetTouches.Length} {args.ChangedTouches.Length}, {args.Detail}, {_activeTouches.Count}");
+        Console.WriteLine($"{DateTime.Now.ToString("ss")} TS {args.Touches.Length} {args.TargetTouches.Length} {args.ChangedTouches.Length}, {args.Detail}, {_activeTouches.Count}");
     }
 
     void OnTouchEnd(TouchEventArgs args)
@@ -272,11 +263,20 @@ public partial class Map : ComponentBase
     {
         Console.WriteLine($"TM {args.Touches.Length} {args.TargetTouches.Length} {args.ChangedTouches.Length}, {args.Detail}, {_activeTouches.Count}");
 
-        if (args.ChangedTouches.Length == 1)
+        switch (args.Touches.Length)
         {
-            ToOffset(args.ChangedTouches[0].ClientX, args.ChangedTouches[0].ClientY, out double offsetX, out double offsetY);
+            case 1:
+                ToOffset(args.ChangedTouches[0].ClientX, args.ChangedTouches[0].ClientY, out double offsetX, out double offsetY);
 
-            _engine.PrimaryMouseMove(offsetX, offsetY);
+                _engine.PrimaryMouseMove(offsetX, offsetY);
+                break;
+            case 2:
+                Console.WriteLine($"\t - {args.ChangedTouches[0].Identifier}");
+
+
+                //_engine.ZoomBetween(args.Touches[0].ClientX, args.Touches[0].ClientY, args.Touches[1].ClientX, args.Touches[1].ClientY);
+
+                break;
         }
     }
 

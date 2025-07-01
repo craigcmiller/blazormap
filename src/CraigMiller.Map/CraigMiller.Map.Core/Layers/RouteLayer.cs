@@ -125,7 +125,7 @@ namespace CraigMiller.Map.Core.Layers
 
         public bool PrimaryMouseDown(CanvasRenderer renderer, double canvasX, double canvasY)
         {
-            if (_canvasPoints is null || _canvasPoints.Length == 0)
+            if (!Editable || _canvasPoints is null || _canvasPoints.Length == 0)
             {
                 return false;
             }
@@ -175,6 +175,11 @@ namespace CraigMiller.Map.Core.Layers
 
         public bool MouseMoved(CanvasRenderer renderer, double canvasX, double canvasY)
         {
+            if (!Editable)
+            {
+                return false;
+            }
+
             if (_draggingIndex != -1)
             {
                 renderer.AreaView.CanvasToLatLon(canvasX, canvasY, out double lat, out double lon);
@@ -186,5 +191,7 @@ namespace CraigMiller.Map.Core.Layers
 
             return false;
         }
+
+        public bool Editable { get; set; } = true;
     }
 }

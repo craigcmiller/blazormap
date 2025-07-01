@@ -139,6 +139,24 @@ namespace CraigMiller.Map.Core.Engine
             }
         }
 
+        public void ZoomBetween(double x1, double y1, double x2, double y2, double xDelta, double yDelta)
+        {
+            double xDiff = x2 - x1;
+            double yDiff = y2 - y1;
+
+            double xMid = xDiff / 2.0 + x1;
+            double yMid = yDiff / 2.0 + y1;
+
+            ReverseRotatePoint(xMid, yMid, out double x, out double y);
+
+            double widthScale = xDelta / AreaView.CanvasWidth;
+            double heightScale = yDelta / AreaView.CanvasHeight;
+
+            double zoomBy = Math.Sqrt(widthScale * widthScale + heightScale * heightScale);
+
+            ZoomOn(x, y, zoomBy);
+        }
+
         /// <summary>
         /// Zooms keeping canvas point at <paramref name="x"/> and <paramref name="y"/> in the same position
         /// </summary>

@@ -6,7 +6,7 @@ namespace CraigMiller.Map.Core.Animation
     {
         readonly IList<MapAnimation> _animations;
 
-        public CombinedAnimation(params MapAnimation[] animations)
+        public CombinedAnimation(params IEnumerable<MapAnimation> animations)
         {
             _animations = new List<MapAnimation>(animations);
         }
