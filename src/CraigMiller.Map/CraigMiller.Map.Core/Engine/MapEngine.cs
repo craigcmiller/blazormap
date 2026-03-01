@@ -1,4 +1,4 @@
-﻿using CraigMiller.Map.Core.Animation;
+using CraigMiller.Map.Core.Animation;
 using CraigMiller.Map.Core.DataLayers;
 using CraigMiller.Map.Core.Layers;
 using SkiaSharp;
@@ -131,7 +131,7 @@ namespace CraigMiller.Map.Core.Engine
 
             if (animateDuration.HasValue)
             {
-                SetActiveAnimation(new ZoomHoldingPointAnimation(zoomBy * AreaView.Zoom, new PointD(x, y), TimeSpan.FromSeconds(0.5), ratio => ratio));
+                SetActiveAnimation(new ZoomHoldingPointAnimation(zoomBy * AreaView.Zoom, new PointD(x, y), animateDuration.Value, ratio => ratio));
             }
             else
             {
