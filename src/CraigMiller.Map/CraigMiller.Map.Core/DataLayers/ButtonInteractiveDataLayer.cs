@@ -10,9 +10,13 @@ public class ButtonInteractiveDataLayer : IDataLayer, IInteractiveLayer
         IsAntialias = true,
         Style = SKPaintStyle.StrokeAndFill,
         Color = new SKColor(20, 20, 20),
-        TextSize = 14f,
-        FakeBoldText = true
     };
+
+    readonly SKFont _font = new SKFont(SKTypeface.Default, 14f)
+    {
+        Embolden = true,
+    };
+
     SKPaint? _backgroundPaint;
     SKRect? _rect;
 
@@ -47,7 +51,7 @@ public class ButtonInteractiveDataLayer : IDataLayer, IInteractiveLayer
                 Color = SKColors.WhiteSmoke.WithAlpha(Alpha)
             };
 
-            float textWidth = _textPaint.MeasureText(Text);
+            float textWidth = _font.MeasureText(Text, _textPaint);
 
             float buttonWidth = textWidth + HorizontalPadding + HorizontalPadding;
             if (buttonWidth < MinWidth)
@@ -55,10 +59,10 @@ public class ButtonInteractiveDataLayer : IDataLayer, IInteractiveLayer
                 buttonWidth = MinWidth;
             }
 
-            _rect = SKRect.Create(X, Y, buttonWidth, _textPaint.TextSize + 14f);
+            _rect = SKRect.Create(X, Y, buttonWidth, _font.Size + 14f);
 
             canvas.DrawRoundRect(_rect.Value, CornerRadius, CornerRadius, _backgroundPaint);
-            canvas.DrawText(Text, X + HorizontalPadding, Y + _textPaint.TextSize + 6f, _textPaint);
+            canvas.DrawText(Text, X + HorizontalPadding, Y + _font.Size + 6f, _font, _textPaint);
         }
     }
 

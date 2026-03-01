@@ -18,10 +18,12 @@ public class CompassDataLayer : IDataLayer
     {
         IsAntialias = true,
         Style = SKPaintStyle.StrokeAndFill,
-        TextSize = 12f,
         Color = SKColors.DarkBlue,
-        FakeBoldText = true,
-        TextAlign = SKTextAlign.Center,
+    };
+
+    readonly SKFont _font = new SKFont(SKTypeface.Default, 14f)
+    {
+        Embolden = true,
     };
 
     readonly SKPaint _circleFillPaint = new()
@@ -53,10 +55,10 @@ public class CompassDataLayer : IDataLayer
         canvas.DrawCircle(0f, 0f, halfArrowLength + 15f, _circleFillPaint);
         canvas.DrawCircle(0f, 0f, halfArrowLength + 15f, _circleOutlinePaint);
 
-        canvas.DrawText("N", 0f, -halfArrowLength - 3f, _textPaint);
-        canvas.DrawText("S", 0f, halfArrowLength + 12f, _textPaint);
-        canvas.DrawText("E", halfArrowLength + 6f, 4f, _textPaint);
-        canvas.DrawText("W", -halfArrowLength - 6f, 4f, _textPaint);
+        canvas.DrawText("N", 0f, -halfArrowLength - 3f, SKTextAlign.Center, _font, _textPaint);
+        canvas.DrawText("S", 0f, halfArrowLength + 12f, SKTextAlign.Center, _font, _textPaint);
+        canvas.DrawText("E", halfArrowLength + 6f, 4f, SKTextAlign.Center, _font, _textPaint);
+        canvas.DrawText("W", -halfArrowLength - 6f, 4f, SKTextAlign.Center, _font, _textPaint);
 
         canvas.DrawLine(new SKPoint(0f, -halfArrowLength), new SKPoint(0f, halfArrowLength), _outlinePaint);
         canvas.DrawLine(new SKPoint(0f, -halfArrowLength), new SKPoint(-arrowHeadLength, -halfArrowLength + arrowHeadLength), _outlinePaint);

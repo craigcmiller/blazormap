@@ -22,7 +22,6 @@ namespace CraigMiller.Map.Core.Layers.Tiling
             _paint = new SKPaint
             {
                 IsAntialias = true,
-                FilterQuality = SKFilterQuality.High,
             };
         }
 

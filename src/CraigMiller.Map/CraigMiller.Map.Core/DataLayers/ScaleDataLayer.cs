@@ -20,8 +20,6 @@ public class ScaleDataLayer : IDataLayer
         Style = SKPaintStyle.Stroke,
         Color = SKColors.DarkGray,
         StrokeWidth = 3f,
-        TextAlign = SKTextAlign.Center,
-        TextSize = 12f
     };
 
     readonly SKPaint _textPaint = new SKPaint
@@ -29,9 +27,11 @@ public class ScaleDataLayer : IDataLayer
         IsAntialias = true,
         Style = SKPaintStyle.Fill,
         Color = SKColors.Black,
-        TextAlign = SKTextAlign.Center,
-        TextSize = 14f,
-        FakeBoldText = true
+    };
+
+    readonly SKFont _font = new SKFont(SKTypeface.Default, 14f)
+    {
+        Embolden = true,
     };
 
     public void DrawLayer(SKCanvas canvas, double canvasWidth, double canvasHeight, SKMatrix rotationMatrix, GeoConverter converter)
@@ -71,7 +71,7 @@ public class ScaleDataLayer : IDataLayer
 
         string valText = distInt == 0 ? distVal.ToString("0.00") : distInt.ToString();
 
-        canvas.DrawText($"{valText} {Units.ShortSuffix()}", (scaleXEnd - scaleXStart) / 2f + scaleXStart, scaleY - 6f, _textPaint);
+        canvas.DrawText($"{valText} {Units.ShortSuffix()}", (scaleXEnd - scaleXStart) / 2f + scaleXStart, scaleY - 6f, SKTextAlign.Center, _font, _textPaint);
     }
 
     public float ScaleWidth { get; set; } = 150f;

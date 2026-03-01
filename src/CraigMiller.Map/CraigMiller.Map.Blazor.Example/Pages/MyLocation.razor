@@ -20,32 +20,35 @@
         {
             Map map = _mapWithCode!.Map!;
 
-            map.AddDefaultLayers();
-
-            map.Engine.Zoom = Tile.GetZoomScale(7);
-
-            if (GeolocationService is not null)
+            map.Setup = (_, engine) =>
             {
-                GeolocationService.WatchPosition(pos =>
+                map.AddDefaultLayers();
+
+                engine.Zoom = Tile.GetZoomScale(7);
+
+                if (GeolocationService is not null)
                 {
-                    Location location = new Location(pos.Coords.Latitude, pos.Coords.Longitude);
-
-                    map.Engine.EnqueueAnimation(new PanToLocationAnimation(location, TimeSpan.FromSeconds(2), RateFunctions.AccelerateDecelerate));
-
-                    var circleMarkerLayer = new CircleMarkerLayer
+                    GeolocationService.WatchPosition(pos =>
                     {
-                        Locations = [location]
-                    };
-                    DurationAnimatedLayer<CircleMarkerLayer> animatedCircleMarker = CircleMarkerLayer.CreateAnimated(circleMarkerLayer, TimeSpan.FromSeconds(1), 4, 24);
-                    animatedCircleMarker.MaxRepetitions = int.MaxValue;
+                        Location location = new Location(pos.Coords.Latitude, pos.Coords.Longitude);
 
-                    map.Engine.RemoveLayers<DurationAnimatedLayer<CircleMarkerLayer>>();
-                    map.Engine.AddLayer(animatedCircleMarker);
+                        engine.EnqueueAnimation(new PanToLocationAnimation(location, TimeSpan.FromSeconds(2), RateFunctions.AccelerateDecelerate));
 
-                    _lastLocationStr = location.ToDegreesMinutesSecondsString();
-                    StateHasChanged();
-                });
-            }
+                        var circleMarkerLayer = new CircleMarkerLayer
+                            {
+                                Locations = [location]
+                            };
+                        DurationAnimatedLayer<CircleMarkerLayer> animatedCircleMarker = CircleMarkerLayer.CreateAnimated(circleMarkerLayer, TimeSpan.FromSeconds(1), 4, 24);
+                        animatedCircleMarker.MaxRepetitions = int.MaxValue;
+
+                        engine.RemoveLayers<DurationAnimatedLayer<CircleMarkerLayer>>();
+                        engine.AddLayer(animatedCircleMarker);
+
+                        _lastLocationStr = location.ToDegreesMinutesSecondsString();
+                        StateHasChanged();
+                    });
+                }
+            };
         }
     }
 

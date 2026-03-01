@@ -7,7 +7,7 @@ namespace CraigMiller.Map.Core.Routes
     {
         readonly List<Waypoint> _waypoints;
 
-        public event EventHandler<Waypoint> WaypointAdded;
+        public event EventHandler<Waypoint>? WaypointAdded;
 
         public Route()
         {

@@ -13,9 +13,14 @@ public class DiagnosticsDataLayer : IDataLayer
         Color = SKColors.Black
     };
 
+    readonly SKFont _font = new SKFont(SKTypeface.Default, 14f)
+    {
+        Embolden = true,
+    };
+
     public void DrawLayer(SKCanvas canvas, double canvasWidth, double canvasHeight, SKMatrix rotationMatrix, GeoConverter converter)
     {
         converter.CanvasToLatLon(converter.CanvasWidth / 2.0, converter.CanvasHeight / 2.0, out double centerLat, out double centerLon);
-        canvas.DrawText(new Location(centerLat, centerLon).ToDegreesMinutesSecondsString(), new SKPoint(20, 20), _textPaint);
+        canvas.DrawText(new Location(centerLat, centerLon).ToDegreesMinutesSecondsString(), new SKPoint(20, 20), _font, _textPaint);
     }
 }

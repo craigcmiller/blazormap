@@ -43,9 +43,13 @@ namespace CraigMiller.Map.Core.Layers
             IsAntialias = true,
             Style = SKPaintStyle.StrokeAndFill,
             Color = SKColors.DarkRed,
-            TextSize = 12f,
-            FakeBoldText = true
         };
+
+        readonly SKFont _font = new SKFont(SKTypeface.Default, 12f)
+        {
+            Embolden = true,
+        };
+
         readonly SKPaint _textBackgroundPaint = new SKPaint
         {
             IsAntialias = true,
@@ -95,7 +99,7 @@ namespace CraigMiller.Map.Core.Layers
                 string infoText = $"{dist.NatuticalMiles:0.0}nm {displayDegs:000}°";
 
                 MathHelper.AngleAndDistanceBetweenPoints(curCanvas.X, curCanvas.Y, prevCanvas.X, prevCanvas.Y, out float rads, out float pixDist);
-                float textWidth = _textPaint.MeasureText(infoText);
+                float textWidth = _font.MeasureText(infoText, _textPaint);
                 if (textWidth + 22f < pixDist)
                 {
                     canvas.Save();
@@ -104,7 +108,7 @@ namespace CraigMiller.Map.Core.Layers
                     canvas.RotateRadians(rads);
 
                     canvas.DrawRoundRect(14f, -7f, textWidth + 6f, 14f, 4f, 4f, _textBackgroundPaint);
-                    canvas.DrawText(infoText, 18f, 4f, _textPaint);
+                    canvas.DrawText(infoText, 18f, 4f, _font, _textPaint);
 
                     canvas.Restore();
                 }

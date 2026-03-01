@@ -17,7 +17,7 @@ public partial class Map : ComponentBase
     readonly string _id = $"{nameof(Map).ToLower()}_{Guid.NewGuid().ToString().Replace("-", "")}";
     readonly MapEngine _engine;
     double _devicePixelRatio;
-    ElementBoundingRect _boundingRect;
+    ElementBoundingRect? _boundingRect;
 
     public Map()
     {
@@ -208,7 +208,7 @@ public partial class Map : ComponentBase
     {
         double zoomMultiplier = (args.DeltaY * -1.0) / 250.0 + 1.0;
 
-        _engine.ZoomOn(args.OffsetX, args.OffsetY, zoomMultiplier, TimeSpan.FromSeconds(0.02));
+        _engine.ZoomOn(args.OffsetX, args.OffsetY, zoomMultiplier, TimeSpan.FromSeconds(0.15));
     }
 
     void OnClick(MouseEventArgs args)
@@ -317,8 +317,8 @@ public partial class Map : ComponentBase
 
     void ToOffset(double clientX, double clientY, out double offsetX, out double offsetY)
     {
-        offsetX = (clientX - _boundingRect.Left) ;
-        offsetY = (clientY - _boundingRect.Top) ;
+        offsetX = (clientX - _boundingRect!.Left) ;
+        offsetY = (clientY - _boundingRect!.Top) ;
     }
 
     [Inject]

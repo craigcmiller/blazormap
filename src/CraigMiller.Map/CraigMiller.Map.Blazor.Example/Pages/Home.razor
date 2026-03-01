@@ -31,12 +31,15 @@
 
             map!.AddDefaultLayers();
 
-            map!.Engine.EnqueueAnimation(
-                new DeferredAnimation(
-                    new CombinedAnimation(
-                        new ZoomAnimation(Tile.GetZoomScale(8), TimeSpan.FromSeconds(2), RateFunctions.Linear),
-                        new PanToLocationAnimation(new Core.Geo.Location(51, 0), TimeSpan.FromSeconds(2), RateFunctions.AccelerateDecelerate)),
-                TimeSpan.FromSeconds(1)));
+            map.Setup = (_, engine) =>
+            {
+                map!.Engine.EnqueueAnimation(
+                    new DeferredAnimation(
+                        new CombinedAnimation(
+                            new ZoomAnimation(Tile.GetZoomScale(8), TimeSpan.FromSeconds(2), RateFunctions.Linear),
+                            new PanToLocationAnimation(new Core.Geo.Location(51, 0), TimeSpan.FromSeconds(2), RateFunctions.AccelerateDecelerate)),
+                    TimeSpan.FromSeconds(1)));
+            };
         }
     }
 }

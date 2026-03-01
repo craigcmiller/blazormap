@@ -45,6 +45,12 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.
         if (firstRender)
         {
             _map!.AddDefaultLayers();
+
+            // Do inital map setup inside setup. This ensures the map is fully initialised before we try to manipulate it.
+            _map!.Setup = (_, engine) =>
+            {
+                engine.Center = new Location(51, 0.25);
+            }
         }
     }
 }
