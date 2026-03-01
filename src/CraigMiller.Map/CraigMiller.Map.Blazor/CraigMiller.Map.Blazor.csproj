@@ -31,11 +31,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.0" />
-		<PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="10.0.0" />
-		<PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="10.0.0" />
-		<PackageReference Include="SkiaSharp.Views.Blazor" Version="3.119.2-preview.1" />
-		<PackageReference Include="SkiaSharp" Version="3.119.2-preview.1" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.3" />
+		<PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="10.0.3" />
+		<PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="10.0.3" />
+		<PackageReference Include="SkiaSharp.Views.Blazor" Version="3.119.2" />
+		<PackageReference Include="SkiaSharp" Version="3.119.2" />
 	</ItemGroup>
 
 	<ItemGroup>
