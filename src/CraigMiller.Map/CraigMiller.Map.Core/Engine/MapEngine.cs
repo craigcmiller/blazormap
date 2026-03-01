@@ -1,4 +1,4 @@
-﻿using CraigMiller.Map.Core.Animation;
+using CraigMiller.Map.Core.Animation;
 using CraigMiller.Map.Core.DataLayers;
 using CraigMiller.Map.Core.Layers;
 using SkiaSharp;
@@ -131,12 +131,30 @@ namespace CraigMiller.Map.Core.Engine
 
             if (animateDuration.HasValue)
             {
-                SetActiveAnimation(new ZoomHoldingPointAnimation(zoomBy * AreaView.Zoom, new PointD(x, y), TimeSpan.FromSeconds(0.5), ratio => ratio));
+                SetActiveAnimation(new ZoomHoldingPointAnimation(zoomBy * AreaView.Zoom, new PointD(x, y), animateDuration.Value, ratio => ratio));
             }
             else
             {
                 ZoomOn(x, y, zoomBy);
             }
+        }
+
+        public void ZoomBetween(double x1, double y1, double x2, double y2, double xDelta, double yDelta)
+        {
+            double xDiff = x2 - x1;
+            double yDiff = y2 - y1;
+
+            double xMid = xDiff / 2.0 + x1;
+            double yMid = yDiff / 2.0 + y1;
+
+            ReverseRotatePoint(xMid, yMid, out double x, out double y);
+
+            double widthScale = xDelta / AreaView.CanvasWidth;
+            double heightScale = yDelta / AreaView.CanvasHeight;
+
+            double zoomBy = Math.Sqrt(widthScale * widthScale + heightScale * heightScale);
+
+            ZoomOn(x, y, zoomBy);
         }
 
         /// <summary>

@@ -12,7 +12,7 @@ on:
       - main
     
 env:
-  DOTNET_VERSION: 9.0.x
+  DOTNET_VERSION: 10.0.x
   #url: ${{ steps.deployment.outputs.page_url }}
   NUGET_TOKEN: ${{ secrets.BLAZORMAP_NUGET }}
 

@@ -7,6 +7,8 @@ namespace CraigMiller.Map.Core.Routes
     {
         readonly List<Waypoint> _waypoints;
 
+        public event EventHandler<Waypoint> WaypointAdded;
+
         public Route()
         {
             _waypoints = new List<Waypoint>();
@@ -15,6 +17,8 @@ namespace CraigMiller.Map.Core.Routes
         public void AddWaypoint(Waypoint waypoint)
         {
             _waypoints.Add(waypoint);
+
+            WaypointAdded?.Invoke(this, waypoint);
         }
 
         public void AddWaypoint(double lat, double lon)
@@ -30,6 +34,8 @@ namespace CraigMiller.Map.Core.Routes
         public void InsertWaypoint(int index, Waypoint waypoint)
         {
             _waypoints.Insert(index, waypoint);
+
+            WaypointAdded?.Invoke(this, waypoint);
         }
 
         public void InsertWaypoint(int index, double lat, double lon)

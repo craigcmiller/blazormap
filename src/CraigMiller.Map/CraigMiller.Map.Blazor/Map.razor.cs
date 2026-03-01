@@ -1,4 +1,4 @@
-﻿using SkiaSharp.Views.Blazor;
+using SkiaSharp.Views.Blazor;
 using Microsoft.JSInterop;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -24,14 +24,41 @@ public partial class Map : ComponentBase
         _engine = new MapEngine();
     }
 
+    /// <summary>
+    /// Gets or sets an optional callback which will be invoked once the map has been rendered for the first time and is ready to have layers added to it. The MapEngine instance will be passed as a parameter to the callback.
+    /// </summary>
+    public MapSetupCallback? Setup { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
         base.OnInitialized();
 
         await using MapJsInterop mapJsInterop = new(JSRuntime!);
 
+        // Safe to call here — doesn't need the element to exist
         _devicePixelRatio = await mapJsInterop.GetDevicePixelRatio();
 
+        if (Setup is null)
+        {
+            AddDefaultLayers();
+
+            Setup = (_, _) =>
+            {
+                _engine.Zoom = Tile.GetZoomScale(InitalZoomLevel);
+                _engine.Center = InitialLatitude.HasValue && InitialLongitude.HasValue
+                    ? new Location(InitialLatitude.Value, InitialLongitude.Value)
+                    : Location.NullIsland;
+            };
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+
+        await using MapJsInterop mapJsInterop = new(JSRuntime!);
+
+        // Element is now in the DOM — event listeners and size reads are safe
         await mapJsInterop.DisableEventListeners(
             _id,
             "wheel",
@@ -52,9 +79,6 @@ public partial class Map : ComponentBase
         _boundingRect = await mapJsInterop.GetElementBoundingClientRect(_id);
         _engine.AreaView.CanvasWidth = _boundingRect.Width;
         _engine.AreaView.CanvasHeight = _boundingRect.Height;
-
-        _engine.Zoom = Tile.GetZoomScale(InitalZoomLevel);
-        _engine.Center = InitialLatitude.HasValue && InitialLongitude.HasValue ? new Location(InitialLatitude.Value, InitialLongitude.Value) : Location.NullIsland;
     }
 
     public void AddDefaultLayers()
@@ -141,21 +165,23 @@ public partial class Map : ComponentBase
 
     void OnPaintSurface(SKPaintGLSurfaceEventArgs paintEventArgs)
     {
+        if (paintEventArgs.Info.Width == 0 || paintEventArgs.Info.Height == 0)
+        {
+            return;
+        }
+
         _engine.AreaView.CanvasWidth = paintEventArgs.Info.Width / _devicePixelRatio;
         _engine.AreaView.CanvasHeight = paintEventArgs.Info.Height / _devicePixelRatio;
 
         SKCanvas canvas = paintEventArgs.Surface.Canvas;
 
-        var paint = new SKPaint
-        {
-            Color = SKColors.Red,
-            Style = SKPaintStyle.StrokeAndFill
-        };
-
-        canvas.DrawLine(100, 100, 400, 100, paint);
-        canvas.DrawLine(100, 120, 400, 120, paint);
-
         _engine.Draw(canvas, (float)_devicePixelRatio);
+
+        if (Setup is not null)
+        {
+            Setup(this, _engine);
+            Setup = null;
+        }
     }
 
     void OnMouseDown(MouseEventArgs args)
@@ -219,7 +245,7 @@ public partial class Map : ComponentBase
             _engine.PrimaryMouseDown(offsetX, offsetY);
         }
 
-        //Console.WriteLine($"TS {args.Touches.Length} {args.TargetTouches.Length} {args.ChangedTouches.Length}, {args.Detail}, {_activeTouches.Count}");
+        Console.WriteLine($"{DateTime.Now.ToString("ss")} TS {args.Touches.Length} {args.TargetTouches.Length} {args.ChangedTouches.Length}, {args.Detail}, {_activeTouches.Count}");
     }
 
     void OnTouchEnd(TouchEventArgs args)
@@ -265,18 +291,27 @@ public partial class Map : ComponentBase
             _recentTaps.Remove(recentTap);
         }
 
-        //Console.WriteLine($"TE {args.Touches.Length} {args.TargetTouches.Length} {args.ChangedTouches.Length}, {args.Detail}, {_activeTouches.Count}");
+        Console.WriteLine($"TE {args.Touches.Length} {args.TargetTouches.Length} {args.ChangedTouches.Length}, {args.Detail}, {_activeTouches.Count}");
     }
 
     void OnTouchMove(TouchEventArgs args)
     {
-        //Console.WriteLine($"TM {args.Touches.Length} {args.TargetTouches.Length} {args.ChangedTouches.Length}, {args.Detail}, {_activeTouches.Count}");
+        Console.WriteLine($"TM {args.Touches.Length} {args.TargetTouches.Length} {args.ChangedTouches.Length}, {args.Detail}, {_activeTouches.Count}");
 
-        if (args.ChangedTouches.Length == 1)
+        switch (args.Touches.Length)
         {
-            ToOffset(args.ChangedTouches[0].ClientX, args.ChangedTouches[0].ClientY, out double offsetX, out double offsetY);
+            case 1:
+                ToOffset(args.ChangedTouches[0].ClientX, args.ChangedTouches[0].ClientY, out double offsetX, out double offsetY);
 
-            _engine.PrimaryMouseMove(offsetX, offsetY);
+                _engine.PrimaryMouseMove(offsetX, offsetY);
+                break;
+            case 2:
+                Console.WriteLine($"\t - {args.ChangedTouches[0].Identifier}");
+
+
+                //_engine.ZoomBetween(args.Touches[0].ClientX, args.Touches[0].ClientY, args.Touches[1].ClientX, args.Touches[1].ClientY);
+
+                break;
         }
     }
 
@@ -330,3 +365,5 @@ class TouchTracking
 
     public DateTime DownTimestamp { get; }
 }
+
+public delegate void MapSetupCallback(Map map, MapEngine engine);
