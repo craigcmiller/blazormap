@@ -1,4 +1,4 @@
-# This workflow will build a .NET project
+# BlazorMap build and NuGet deploy
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
 
 name: Build blazormap
@@ -56,14 +56,14 @@ jobs:
         touch _site/wwwroot/.nojekyll
     
     - name: Upload GitHub Pages artifact
-      uses: actions/upload-pages-artifact@v2.0.0
+      uses: actions/upload-pages-artifact@v3
       with:
         name: github-pages
         path: _site/wwwroot
         retention-days: 1
     
     - name: Deploy GitHub Pages site
-      uses: actions/deploy-pages@v3.0.1
+      uses: actions/deploy-pages@v4
       with:
         # GitHub token
         #token: # default is ${{ github.token }}
