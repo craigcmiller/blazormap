@@ -1,4 +1,4 @@
-﻿using SkiaSharp;
+using SkiaSharp;
 
 namespace CraigMiller.Map.Core.Layers.Tiling
 {
@@ -15,7 +15,7 @@ namespace CraigMiller.Map.Core.Layers.Tiling
             _createUrlFunction = createUrlFunction ?? CreateOsmUrlFunction;
         }
 
-        public async Task<SKBitmap> LoadTile(Tile tile, CancellationToken cancellation)
+        public async Task<SKImage> LoadTile(Tile tile, CancellationToken cancellation)
         {
             string url = _createUrlFunction(tile);
 
@@ -30,7 +30,7 @@ namespace CraigMiller.Map.Core.Layers.Tiling
             // Read as a byte array to minimise time spent in SKBitmap.Decode(). Until we have threading in Blazor this leads to a laggy UI
             byte[] bytes = await resp.Content.ReadAsByteArrayAsync(cancellation);
 
-            return SKBitmap.Decode(bytes);
+            return SKImage.FromEncodedData(bytes);
         }
     }
 }
