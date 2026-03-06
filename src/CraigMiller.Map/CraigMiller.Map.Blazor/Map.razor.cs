@@ -11,7 +11,7 @@ using SkiaSharp;
 
 namespace CraigMiller.Map.Blazor;
 
-public partial class Map : ComponentBase
+public partial class Map : ComponentBase, IDisposable
 {
     SKGLView? _view;
     readonly string _id = $"{nameof(Map).ToLower()}_{Guid.NewGuid().ToString().Replace("-", "")}";
@@ -22,6 +22,11 @@ public partial class Map : ComponentBase
     public Map()
     {
         _engine = new MapEngine();
+    }
+
+    public void Dispose()
+    {
+        _engine.Dispose();
     }
 
     /// <summary>
@@ -42,13 +47,7 @@ public partial class Map : ComponentBase
         {
             AddDefaultLayers();
 
-            Setup = (_, _) =>
-            {
-                _engine.Zoom = Tile.GetZoomScale(InitalZoomLevel);
-                _engine.Center = InitialLatitude.HasValue && InitialLongitude.HasValue
-                    ? new Location(InitialLatitude.Value, InitialLongitude.Value)
-                    : Location.NullIsland;
-            };
+            Setup = (_, _) => { };
         }
     }
 
@@ -90,6 +89,14 @@ public partial class Map : ComponentBase
         _engine.AddDataLayer(new CompassDataLayer());
 
         AddZoomButtons();
+    }
+
+    private void SetInitialPositionAndZoom()
+    {
+        _engine.Zoom = Tile.GetZoomScale(InitalZoomLevel);
+        _engine.Center = InitialLatitude.HasValue && InitialLongitude.HasValue
+            ? new Location(InitialLatitude.Value, InitialLongitude.Value)
+            : Location.NullIsland;
     }
 
     public void AddZoomButtons()
@@ -181,6 +188,8 @@ public partial class Map : ComponentBase
         {
             Setup(this, _engine);
             Setup = null;
+
+            SetInitialPositionAndZoom();
         }
     }
 

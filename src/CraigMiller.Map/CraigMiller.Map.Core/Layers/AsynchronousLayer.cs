@@ -1,10 +1,10 @@
-﻿using CraigMiller.Map.Core.Engine;
+using CraigMiller.Map.Core.Engine;
+using CraigMiller.Map.Core.Graphics;
 using SkiaSharp;
-using System.Text.Json;
 
 namespace CraigMiller.Map.Core.Layers
 {
-    public class AsynchronousLayer : ILayer
+    public class AsynchronousLayer : ILayer, IDisposable
     {
         Task? _runTask;
         readonly CanvasRenderer _renderer;
@@ -14,13 +14,18 @@ namespace CraigMiller.Map.Core.Layers
         {
             _renderer = new();
 
-            foreach(ILayer layer in layers)
+            foreach (ILayer layer in layers)
             {
                 _renderer.AddLayer(layer);
             }
         }
 
-        public void DrawLayer(SKCanvas canvas, GeoConverter converter)
+        public void Dispose()
+        {
+            _renderer.Dispose();
+        }
+
+        public void DrawLayer(SKCanvas canvas, GeoConverter converter, GraphicsObjects graphicsObjects)
         {
             GeoConverter clonedConverter = converter.Clone();
 

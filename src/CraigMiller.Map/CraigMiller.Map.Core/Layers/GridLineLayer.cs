@@ -1,4 +1,5 @@
-﻿using CraigMiller.Map.Core.Engine;
+using CraigMiller.Map.Core.Engine;
+using CraigMiller.Map.Core.Graphics;
 using SkiaSharp;
 
 namespace CraigMiller.Map.Core.Layers
@@ -27,7 +28,7 @@ namespace CraigMiller.Map.Core.Layers
             _pathEffect.Dispose();
         }
 
-        public void DrawLayer(SKCanvas canvas, GeoConverter converter)
+        public void DrawLayer(SKCanvas canvas, GeoConverter converter, GraphicsObjects graphicsObjects)
         {
             // Draw latitude grid lines
             for (double lat = -80; lat <= 80; lat += 10)

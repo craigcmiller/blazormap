@@ -1,5 +1,6 @@
-﻿using CraigMiller.Map.Core.Engine;
+using CraigMiller.Map.Core.Engine;
 using CraigMiller.Map.Core.Geo;
+using CraigMiller.Map.Core.Graphics;
 using SkiaSharp;
 
 namespace CraigMiller.Map.Core.Layers
@@ -14,7 +15,7 @@ namespace CraigMiller.Map.Core.Layers
             IsAntialias = true,
         };
 
-        public void DrawLayer(SKCanvas canvas, GeoConverter converter)
+        public void DrawLayer(SKCanvas canvas, GeoConverter converter, GraphicsObjects graphicsObjects)
         {
             foreach (Location location in Locations)
             {
