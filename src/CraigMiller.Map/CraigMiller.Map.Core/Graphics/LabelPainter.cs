@@ -1,4 +1,4 @@
-﻿using SkiaSharp;
+using SkiaSharp;
 
 namespace CraigMiller.Map.Core.Graphics
 {
@@ -34,7 +34,7 @@ namespace CraigMiller.Map.Core.Graphics
 
         public void PaintLabel(SKCanvas canvas, float x, float y, string label)
         {
-            canvas.DrawText(label, x, y, _font, _background);
+            canvas.DrawText(label, x - 1f, y - 1f, _font, _background);
             canvas.DrawText(label, x, y, _font, _foreground);
         }
     }

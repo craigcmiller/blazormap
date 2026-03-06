@@ -1,13 +1,15 @@
-﻿using CraigMiller.Map.Core.Geo;
+using CraigMiller.Map.Core.Geo;
+using CraigMiller.Map.Core.Graphics;
 using SkiaSharp;
 
 namespace CraigMiller.Map.Core.Engine
 {
-    public class CanvasRenderer
+    public class CanvasRenderer : IDisposable
     {
         readonly IList<RenderableLayer> _layers = new List<RenderableLayer>();
         readonly IList<RenderableLayer> _layersToEvict = new List<RenderableLayer>();
         readonly IList<RenderableDataLayer> _dataLayers = new List<RenderableDataLayer>();
+        readonly GraphicsObjects _graphicsObjects = new GraphicsObjects();
 
         public CanvasRenderer()
         {
@@ -17,6 +19,27 @@ namespace CraigMiller.Map.Core.Engine
                 ProjectedBottom = SmcProjection.WorldMin,
                 Zoom = 0.0001
             };
+        }
+
+        public void Dispose()
+        {
+            foreach (RenderableLayer layer in _layers)
+            {
+                if (layer is IDisposable disposableLayer)
+                {
+                    disposableLayer.Dispose();
+                }
+            }
+
+            foreach (RenderableDataLayer dataLayer in _dataLayers)
+            {
+                if (dataLayer is IDisposable disposableLayer)
+                {
+                    disposableLayer.Dispose();
+                }
+            }
+
+            _graphicsObjects.Dispose();
         }
 
         public GeoConverter AreaView { get; set; }
@@ -93,7 +116,7 @@ namespace CraigMiller.Map.Core.Engine
                         }
                     }
 
-                    renderableLayer.Layer.DrawLayer(canvas, AreaView);
+                    renderableLayer.Layer.DrawLayer(canvas, AreaView, _graphicsObjects);
                 }
             }
 

@@ -1,28 +1,27 @@
-﻿using SkiaSharp;
+using SkiaSharp;
 
-namespace CraigMiller.Map.Core.Graphics
+namespace CraigMiller.Map.Core.Graphics;
+
+public static class PaintFactory
 {
-    public static class PaintFactory
+    public static SKPaint CreateStrokePaint(SKColor color, float strokeWidth)
     {
-        public static SKPaint CreateStrokePaint(SKColor color, float strokeWidth)
+        return new SKPaint
         {
-            return new SKPaint
-            {
-                Color = color,
-                Style = SKPaintStyle.Stroke,
-                StrokeWidth = strokeWidth,
-                IsAntialias = true
-            };
-        }
+            Color = color,
+            Style = SKPaintStyle.Stroke,
+            StrokeWidth = strokeWidth,
+            IsAntialias = true
+        };
+    }
 
-        public static SKPaint CreateFillPaint(SKColor color)
+    public static SKPaint CreateFillPaint(SKColor color)
+    {
+        return new SKPaint
         {
-            return new SKPaint
-            {
-                Color = color,
-                Style = SKPaintStyle.Fill,
-                IsAntialias = true
-            };
-        }
+            Color = color,
+            Style = SKPaintStyle.Fill,
+            IsAntialias = true
+        };
     }
 }

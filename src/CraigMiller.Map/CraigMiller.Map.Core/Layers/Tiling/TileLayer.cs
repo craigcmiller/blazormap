@@ -1,4 +1,5 @@
-﻿using CraigMiller.Map.Core.Engine;
+using CraigMiller.Map.Core.Engine;
+using CraigMiller.Map.Core.Graphics;
 using SkiaSharp;
 
 namespace CraigMiller.Map.Core.Layers.Tiling
@@ -25,7 +26,7 @@ namespace CraigMiller.Map.Core.Layers.Tiling
             };
         }
 
-        public void DrawLayer(SKCanvas canvas, GeoConverter converter)
+        public void DrawLayer(SKCanvas canvas, GeoConverter converter, GraphicsObjects graphicsObjects)
         {
             ProjectedRect projectedRect = converter.ProjectedRect;
 

@@ -11,7 +11,7 @@ using SkiaSharp;
 
 namespace CraigMiller.Map.Blazor;
 
-public partial class Map : ComponentBase
+public partial class Map : ComponentBase, IDisposable
 {
     SKGLView? _view;
     readonly string _id = $"{nameof(Map).ToLower()}_{Guid.NewGuid().ToString().Replace("-", "")}";
@@ -22,6 +22,11 @@ public partial class Map : ComponentBase
     public Map()
     {
         _engine = new MapEngine();
+    }
+
+    public void Dispose()
+    {
+        _engine.Dispose();
     }
 
     /// <summary>

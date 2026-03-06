@@ -1,5 +1,6 @@
-﻿using CraigMiller.Map.Core.Engine;
+using CraigMiller.Map.Core.Engine;
 using CraigMiller.Map.Core.Geo;
+using CraigMiller.Map.Core.Graphics;
 using CraigMiller.Map.Core.Routes;
 using CraigMiller.Map.Core.Units;
 using SkiaSharp;
@@ -60,7 +61,7 @@ namespace CraigMiller.Map.Core.Layers
         SKPoint[]? _canvasPoints;
         int _draggingIndex = -1;
 
-        public void DrawLayer(SKCanvas canvas, GeoConverter converter)
+        public void DrawLayer(SKCanvas canvas, GeoConverter converter, GraphicsObjects graphicsObjects)
         {
             if (Route.WaypointCount == 0)
             {

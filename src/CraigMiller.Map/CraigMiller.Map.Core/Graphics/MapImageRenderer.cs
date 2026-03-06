@@ -1,4 +1,4 @@
-﻿using CraigMiller.Map.Core.Engine;
+using CraigMiller.Map.Core.Engine;
 using SkiaSharp;
 
 namespace CraigMiller.Map.Core.Graphics
@@ -6,12 +6,14 @@ namespace CraigMiller.Map.Core.Graphics
     /// <summary>
     /// Renderer for drawing a map on a static bitmap
     /// </summary>
-    public class MapImageRenderer
+    public class MapImageRenderer : IDisposable
     {
         public MapImageRenderer()
         {
             Engine = new MapEngine();
         }
+
+        public void Dispose() => Engine.Dispose();
 
         public MapEngine Engine { get; }
 
