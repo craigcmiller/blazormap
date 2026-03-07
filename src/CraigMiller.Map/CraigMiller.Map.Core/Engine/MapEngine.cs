@@ -220,6 +220,11 @@ namespace CraigMiller.Map.Core.Engine
         }
 
         /// <summary>
+        /// Stops any active animations
+        /// </summary>
+        public void ClearAnimations() => _animations.Clear();
+
+        /// <summary>
         /// Gets or sets the time an inertial pan happens for
         /// </summary>
         public TimeSpan InertialPanDuration { get; set; } = TimeSpan.FromSeconds(1.0);
