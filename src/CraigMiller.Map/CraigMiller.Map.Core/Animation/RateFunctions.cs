@@ -1,4 +1,4 @@
-﻿namespace CraigMiller.Map.Core.Animation
+namespace CraigMiller.Map.Core.Animation
 {
     public static class RateFunctions
     {
@@ -17,6 +17,8 @@
 
             return ratio / 2.0;
         }
+
+        public static double Accelerate(double ratioOfDuration) => Math.Pow(ratioOfDuration, 2.0);
 
         public static double DecelerateToStop(double ratioOfDuration) => Math.Pow(1.0 - ratioOfDuration, 2.0);
 
