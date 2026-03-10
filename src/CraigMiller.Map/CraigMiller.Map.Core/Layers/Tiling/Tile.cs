@@ -1,4 +1,4 @@
-﻿using CraigMiller.Map.Core.Engine;
+using CraigMiller.Map.Core.Engine;
 using System.Diagnostics.CodeAnalysis;
 
 namespace CraigMiller.Map.Core.Layers.Tiling
@@ -80,6 +80,27 @@ namespace CraigMiller.Map.Core.Layers.Tiling
 
 			return new ProjectedRect(SmcProjection.WorldMin + smcWidthPerTile * X, SmcProjection.WorldMax - smcHeightPerTile * (Y + 1), smcWidthPerTile, smcHeightPerTile);
 		}
+
+        /// <summary>
+        /// Gets the tile at the parent zoom level
+        /// </summary>
+        /// <returns></returns>
+        public (Tile tile, int xQuadrant, int yQuadrant) GetZoomedOutEquivalentTile()
+        {
+            if (Z <= 0 || Z >= 20)
+            {
+                return (this, 0, 0);
+            }
+
+            int parentZoom = Z - 1;
+            int parentX = X / 2;
+            int parentY = Y / 2;
+
+            int xQuadrant = (int)Math.Round(((X / 2.0) - parentX) * 2);
+            int yQuadrant = (int)Math.Round(((Y / 2.0) - parentY) * 2);
+
+            return (new Tile(parentX, parentY, parentZoom), xQuadrant, yQuadrant);
+        }
 
 		/// <summary>
 		/// Gets the projected width and height of a single tile for zoom level <paramref name="zoomLevel"/>
