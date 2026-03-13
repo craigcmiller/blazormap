@@ -191,12 +191,63 @@ namespace CraigMiller.Map.Core.Layers
                 Route[_draggingIndex].Latitude = lat;
                 Route[_draggingIndex].Longitude = lon;
 
+                Location? snapTo = GetNearestSnapToLocationWithinTolerance(new SKPoint((float)canvasX, (float)canvasY), renderer.AreaView);
+                if (snapTo.HasValue)
+                {
+                    Route[_draggingIndex].Latitude = snapTo.Value.Latitude;
+                    Route[_draggingIndex].Longitude = snapTo.Value.Longitude;
+                }
+
                 return true;
             }
 
             return false;
         }
 
+        public bool SecondaryMouseClicked(CanvasRenderer renderer, double canvasX, double canvasY)
+        {
+            renderer.AreaView.CanvasToLatLon(canvasX, canvasY, out double lat, out double lon);
+
+            Location? snapTo = GetNearestSnapToLocationWithinTolerance(new SKPoint((float)canvasX, (float)canvasY), renderer.AreaView);
+            if (snapTo.HasValue)
+            {
+                lat = snapTo.Value.Latitude;
+                lon = snapTo.Value.Longitude;
+            }
+
+            Route.AddWaypoint(lat, lon);
+
+            return true;
+        }
+
         public bool Editable { get; set; } = true;
+
+        Location? GetNearestSnapToLocationWithinTolerance(SKPoint canvasPoint, GeoConverter converter)
+        {
+            Location? nearest = null;
+            float nearestDist = float.MaxValue;
+
+            foreach (Location loc in SnapToLocations)
+            {
+                SKPoint locCanvas = converter.LatLonToCanvas(loc.Latitude, loc.Longitude);
+                float dist = MathHelper.DistanceBetweenPoints(canvasPoint.X, canvasPoint.Y, locCanvas.X, locCanvas.Y);
+                if (dist < nearestDist)
+                {
+                    nearestDist = dist;
+                    nearest = loc;
+                }
+            }
+
+            if (nearestDist <= SnapToTolerancePixels)
+            {
+                return nearest;
+            }
+
+            return null;
+        }
+
+        public ICollection<Location> SnapToLocations { get; private set; } = new List<Location>();
+
+        public float SnapToTolerancePixels { get; set; } = 10f;
     }
 }

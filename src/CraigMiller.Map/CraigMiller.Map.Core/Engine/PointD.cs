@@ -1,13 +1,12 @@
-﻿namespace CraigMiller.Map.Core.Engine
-{
-    public readonly struct PointD
-    {
-        public readonly double X, Y;
+namespace CraigMiller.Map.Core.Engine;
 
-        public PointD(double x, double y)
-        {
-            X = x;
-            Y = y;
-        }
+public readonly struct PointD
+{
+    public readonly double X, Y;
+
+    public PointD(double x, double y)
+    {
+        X = x;
+        Y = y;
     }
 }

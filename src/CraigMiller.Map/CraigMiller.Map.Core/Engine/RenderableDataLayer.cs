@@ -1,21 +1,20 @@
-﻿namespace CraigMiller.Map.Core.Engine
+namespace CraigMiller.Map.Core.Engine;
+
+public class RenderableDataLayer
 {
-    public class RenderableDataLayer
+    public RenderableDataLayer(IDataLayer layer)
     {
-        public RenderableDataLayer(IDataLayer layer)
+        Layer = layer;
+
+        if (Layer is IInteractiveLayer interactiveLayer)
         {
-            Layer = layer;
-
-            if (Layer is IInteractiveLayer interactiveLayer)
-            {
-                InteractiveLayer = interactiveLayer;
-            }
+            InteractiveLayer = interactiveLayer;
         }
-
-        public IDataLayer Layer { get; }
-
-        public IInteractiveLayer? InteractiveLayer { get; }
-
-        public bool ShouldRender { get; set; } = true;
     }
+
+    public IDataLayer Layer { get; }
+
+    public IInteractiveLayer? InteractiveLayer { get; }
+
+    public bool ShouldRender { get; set; } = true;
 }
