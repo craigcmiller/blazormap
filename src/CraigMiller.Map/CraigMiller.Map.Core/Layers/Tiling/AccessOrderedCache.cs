@@ -1,6 +1,6 @@
-﻿namespace CraigMiller.Map.Core.Layers.Tiling
+namespace CraigMiller.Map.Core.Layers.Tiling
 {
-    public class AccessOrderedCache<TKey, TVal> where TKey : notnull
+    public class AccessOrderedCache<TKey, TVal> : IDisposable where TKey : notnull
     {
         readonly IDictionary<TKey, CachedItem> _dict;
         readonly Action<TKey, TVal> _itemEvicted;
@@ -10,6 +10,22 @@
             _dict = new Dictionary<TKey, CachedItem>();
             _itemEvicted = itemEvicted;
             Capacity = capacity;
+        }
+
+        /// <summary>
+        /// Evicts all items from the cache, invoking the eviction callback for each item 
+        /// </summary>
+        public void Dispose()
+        {
+            lock (_dict)
+            {
+                foreach (KeyValuePair<TKey, CachedItem> kvp in _dict)
+                {
+                    _itemEvicted(kvp.Key, kvp.Value.Value);
+                }
+
+                _dict.Clear();
+            }
         }
 
         /// <summary>
