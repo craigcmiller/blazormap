@@ -101,27 +101,31 @@ public static class MathHelper
 
     public static bool IsPointOnLine(double xA, double yA, double xB, double yB, double xCheck, double yCheck, double tolerance)
     {
-        double xDiff = xB - xA;
-        // Calculate slope and y intercept of the line
-        double m = xDiff == 0 ? double.PositiveInfinity : (yB - yA) / xDiff;
-        double b = yA - m * xA;
+        double dx = xB - xA;
+        double dy = yB - yA;
 
-        // Calculate expected y coordinate on the line for the check point
-        double yExpected = m * xCheck + b;
+        // Collinearity test (perpendicular distance)
+        double cross = dx * (yCheck - yA) - dy * (xCheck - xA);
+        double length = Math.Sqrt(dx * dx + dy * dy);
 
-        return Math.Abs(yExpected - yCheck) <= tolerance;
-    }
+        if (Math.Abs(cross) / length > tolerance)
+        {
+            return false;
+        }
 
-    public static bool IsPointOnLine(float xA, float yA, float xB, float yB, float xCheck, float yCheck, float tolerance)
-    {
-        float xDiff = xB - xA;
-        // Calculate slope and y intercept of the line
-        float m = xDiff == 0 ? float.PositiveInfinity : (yB - yA) / xDiff;
-        float b = yA - m * xA;
+        // Segment bounds test
+        double dot = (xCheck - xA) * dx + (yCheck - yA) * dy;
+        if (dot < 0)
+        {
+            return false;
+        }
 
-        // Calculate expected y coordinate on the line for the check point
-        float yExpected = m * xCheck + b;
+        double lenSq = dx * dx + dy * dy;
+        if (dot > lenSq)
+        {
+            return false;
+        }
 
-        return MathF.Abs(yExpected - yCheck) <= tolerance;
+        return true;
     }
 }
