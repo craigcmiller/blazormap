@@ -5,249 +5,288 @@ using CraigMiller.Map.Core.Routes;
 using CraigMiller.Map.Core.Units;
 using SkiaSharp;
 
-namespace CraigMiller.Map.Core.Layers
+namespace CraigMiller.Map.Core.Layers;
+
+public class RouteLayer : ILayer, IInteractiveLayer
 {
-    public class RouteLayer : ILayer, IInteractiveLayer
+    const float WaypointRadius = 7f;
+
+    readonly SKPaint _routeLineBackgroundPaint = new SKPaint
     {
-        const float WaypointRadius = 7f;
+        IsAntialias = true,
+        Style = SKPaintStyle.Stroke,
+        Color = SKColors.White.WithAlpha(120),
+        StrokeWidth = 7f
+    };
+    readonly SKPaint _routeLineForegroundPaint = new SKPaint
+    {
+        IsAntialias = true,
+        Style = SKPaintStyle.Stroke,
+        Color = SKColors.Magenta.WithAlpha(160),
+        StrokeWidth = 5f
+    };
 
-        readonly SKPaint _routeLineBackgroundPaint = new SKPaint
+    readonly SKPaint _waypointBackgroundPaint = new SKPaint
+    {
+        IsAntialias = true,
+        Style = SKPaintStyle.Fill,
+        Color = SKColors.DarkGray.WithAlpha(180)
+    };
+    readonly SKPaint _waypointForegroundPaint = new SKPaint
+    {
+        IsAntialias = true,
+        Style = SKPaintStyle.Fill,
+        Color = SKColors.WhiteSmoke.WithAlpha(190)
+    };
+
+    readonly SKPaint _textPaint = new SKPaint
+    {
+        IsAntialias = true,
+        Style = SKPaintStyle.StrokeAndFill,
+        Color = SKColors.DarkRed,
+    };
+
+    readonly SKFont _font = new SKFont(SKTypeface.Default, 12f)
+    {
+        Embolden = true,
+    };
+
+    readonly SKPaint _textBackgroundPaint = new SKPaint
+    {
+        IsAntialias = true,
+        Style = SKPaintStyle.Fill,
+        Color = SKColors.White.WithAlpha(210)
+    };
+
+    SKPoint[]? _canvasPoints;
+    int _draggingIndex = -1;
+
+    public event EventHandler<WaypointMovedEventArgs>? WaypointMoved;
+
+    public void DrawLayer(SKCanvas canvas, GeoConverter converter, GraphicsObjects graphicsObjects)
+    {
+        if (Route.WaypointCount == 0)
         {
-            IsAntialias = true,
-            Style = SKPaintStyle.Stroke,
-            Color = SKColors.White.WithAlpha(120),
-            StrokeWidth = 7f
-        };
-        readonly SKPaint _routeLineForegroundPaint = new SKPaint
-        {
-            IsAntialias = true,
-            Style = SKPaintStyle.Stroke,
-            Color = SKColors.Magenta.WithAlpha(160),
-            StrokeWidth = 5f
-        };
-
-        readonly SKPaint _waypointBackgroundPaint = new SKPaint
-        {
-            IsAntialias = true,
-            Style = SKPaintStyle.Fill,
-            Color = SKColors.DarkGray.WithAlpha(180)
-        };
-        readonly SKPaint _waypointForegroundPaint = new SKPaint
-        {
-            IsAntialias = true,
-            Style = SKPaintStyle.Fill,
-            Color = SKColors.WhiteSmoke.WithAlpha(190)
-        };
-
-        readonly SKPaint _textPaint = new SKPaint
-        {
-            IsAntialias = true,
-            Style = SKPaintStyle.StrokeAndFill,
-            Color = SKColors.DarkRed,
-        };
-
-        readonly SKFont _font = new SKFont(SKTypeface.Default, 12f)
-        {
-            Embolden = true,
-        };
-
-        readonly SKPaint _textBackgroundPaint = new SKPaint
-        {
-            IsAntialias = true,
-            Style = SKPaintStyle.Fill,
-            Color = SKColors.White.WithAlpha(210)
-        };
-
-        SKPoint[]? _canvasPoints;
-        int _draggingIndex = -1;
-
-        public void DrawLayer(SKCanvas canvas, GeoConverter converter, GraphicsObjects graphicsObjects)
-        {
-            if (Route.WaypointCount == 0)
-            {
-                _canvasPoints = null;
-                return;
-            }
-
-            SKPoint[] canvasPoints = _canvasPoints = Route.Select(wp => converter.LatLonToCanvas(wp.Latitude, wp.Longitude)).ToArray();
-
-            if (Route.WaypointCount >= 2)
-            {
-                var lines = new SKPoint[canvasPoints.Length * 2 - 2];
-                lines[0] = canvasPoints[0];
-                for (int i = 1, lineIndex = 1; i < canvasPoints.Length - 1; i++)
-                {
-                    lines[lineIndex++] = canvasPoints[i];
-                    lines[lineIndex++] = canvasPoints[i];
-                }
-                lines[lines.Length - 1] = canvasPoints[canvasPoints.Length - 1];
-
-                canvas.DrawPoints(SKPointMode.Lines, lines, _routeLineBackgroundPaint);
-                canvas.DrawPoints(SKPointMode.Lines, lines, _routeLineForegroundPaint);
-            }
-
-            SKPoint prevCanvas = canvasPoints[0];
-            Waypoint prevWaypoint = Route[0];
-            for (int i = 1; i < canvasPoints.Length; i++)
-            {
-                SKPoint curCanvas = canvasPoints[i];
-                Waypoint curWaypoint = Route[i];
-
-                Distance dist = Distance.Between(prevWaypoint.Location, curWaypoint.Location);
-
-                double displayDegs = Location.InitialBearingDegrees(prevWaypoint.Location, curWaypoint.Location);
-
-                string infoText = $"{dist.NatuticalMiles:0.0}nm {displayDegs:000}°";
-
-                MathHelper.AngleAndDistanceBetweenPoints(curCanvas.X, curCanvas.Y, prevCanvas.X, prevCanvas.Y, out float rads, out float pixDist);
-                float textWidth = _font.MeasureText(infoText, _textPaint);
-                if (textWidth + 22f < pixDist)
-                {
-                    canvas.Save();
-
-                    canvas.Translate(prevCanvas.X, prevCanvas.Y);
-                    canvas.RotateRadians(rads);
-
-                    canvas.DrawRoundRect(14f, -7f, textWidth + 6f, 14f, 4f, 4f, _textBackgroundPaint);
-                    canvas.DrawText(infoText, 18f, 4f, _font, _textPaint);
-
-                    canvas.Restore();
-                }
-                //Console.WriteLine($"{i}. {prevCanvas} to {curCanvas} : {degs:000} {pixDist:0} ({dist.NatuticalMiles:0.0}nm)");
-
-                prevCanvas = curCanvas;
-                prevWaypoint = curWaypoint;
-            }
-
-            foreach (SKPoint canvasPoint in canvasPoints)
-            {
-                canvas.DrawCircle(canvasPoint, WaypointRadius, _waypointBackgroundPaint);
-                canvas.DrawCircle(canvasPoint, WaypointRadius - 1.5f, _waypointForegroundPaint);
-            }
+            _canvasPoints = null;
+            return;
         }
 
-        public Route Route { get; set; } = new Route();
+        SKPoint[] canvasPoints = _canvasPoints = Route.Select(wp => converter.LatLonToCanvas(wp.Latitude, wp.Longitude)).ToArray();
 
-        public bool PrimaryMouseDown(CanvasRenderer renderer, double canvasX, double canvasY)
+        if (Route.WaypointCount >= 2)
         {
-            if (!Editable || _canvasPoints is null || _canvasPoints.Length == 0)
+            var lines = new SKPoint[canvasPoints.Length * 2 - 2];
+            lines[0] = canvasPoints[0];
+            for (int i = 1, lineIndex = 1; i < canvasPoints.Length - 1; i++)
             {
-                return false;
+                lines[lineIndex++] = canvasPoints[i];
+                lines[lineIndex++] = canvasPoints[i];
             }
+            lines[lines.Length - 1] = canvasPoints[canvasPoints.Length - 1];
 
-            // Check for existing points to drag
-            for (int i = 0; i < _canvasPoints.Length; i++)
+            canvas.DrawPoints(SKPointMode.Lines, lines, _routeLineBackgroundPaint);
+            canvas.DrawPoints(SKPointMode.Lines, lines, _routeLineForegroundPaint);
+        }
+
+        SKPoint prevCanvas = canvasPoints[0];
+        Waypoint prevWaypoint = Route[0];
+        for (int i = 1; i < canvasPoints.Length; i++)
+        {
+            SKPoint curCanvas = canvasPoints[i];
+            Waypoint curWaypoint = Route[i];
+
+            Distance dist = Distance.Between(prevWaypoint.Location, curWaypoint.Location);
+
+            double displayDegs = Location.InitialBearingDegrees(prevWaypoint.Location, curWaypoint.Location);
+
+            string infoText = $"{dist.NatuticalMiles:0.0}nm {displayDegs:000}°";
+
+            MathHelper.AngleAndDistanceBetweenPoints(curCanvas.X, curCanvas.Y, prevCanvas.X, prevCanvas.Y, out float rads, out float pixDist);
+            float textWidth = _font.MeasureText(infoText, _textPaint);
+            if (textWidth + 22f < pixDist)
             {
-                SKPoint pt = _canvasPoints[i];
+                canvas.Save();
 
-                MathHelper.AngleAndDistanceBetweenPoints((float)canvasX, (float)canvasY, pt.X, pt.Y, out _, out float dist);
-                if (dist < WaypointRadius)
-                {
-                    _draggingIndex = i;
+                canvas.Translate(prevCanvas.X, prevCanvas.Y);
+                canvas.RotateRadians(rads);
 
-                    return true;
-                }
+                canvas.DrawRoundRect(14f, -7f, textWidth + 6f, 14f, 4f, 4f, _textBackgroundPaint);
+                canvas.DrawText(infoText, 18f, 4f, _font, _textPaint);
+
+                canvas.Restore();
             }
+            //Console.WriteLine($"{i}. {prevCanvas} to {curCanvas} : {degs:000} {pixDist:0} ({dist.NatuticalMiles:0.0}nm)");
 
-            // Check if point is on a line
-            SKPoint prev = _canvasPoints[0];
-            for (int i = 1; i < _canvasPoints.Length; i++)
-            {
-                SKPoint pt = _canvasPoints[i];
+            prevCanvas = curCanvas;
+            prevWaypoint = curWaypoint;
+        }
 
-                if (MathHelper.IsPointOnLine(prev.X, prev.Y, pt.X, pt.Y, canvasX, canvasY, WaypointRadius))
-                {
-                    renderer.AreaView.CanvasToLatLon(canvasX, canvasY, out double lat, out double lon);
-                    Route.InsertWaypoint(i, lat, lon);
+        foreach (SKPoint canvasPoint in canvasPoints)
+        {
+            canvas.DrawCircle(canvasPoint, WaypointRadius, _waypointBackgroundPaint);
+            canvas.DrawCircle(canvasPoint, WaypointRadius - 1.5f, _waypointForegroundPaint);
+        }
+    }
 
-                    _draggingIndex = i;
+    public Route Route { get; set; } = new Route();
 
-                    return true;
-                }
-
-                prev = pt;
-            }
-
+    public bool PrimaryMouseDown(CanvasRenderer renderer, double canvasX, double canvasY)
+    {
+        if (!Editable || _canvasPoints is null || _canvasPoints.Length == 0)
+        {
             return false;
         }
 
-        public bool PrimaryMouseUp(CanvasRenderer renderer, double canvasX, double canvasY)
+        // Check for existing points to drag
+        for (int i = 0; i < _canvasPoints.Length; i++)
         {
-            _draggingIndex = -1;
+            SKPoint pt = _canvasPoints[i];
 
-            return false;
+            MathHelper.AngleAndDistanceBetweenPoints((float)canvasX, (float)canvasY, pt.X, pt.Y, out _, out float dist);
+            if (dist < WaypointRadius)
+            {
+                _draggingIndex = i;
+
+                return true;
+            }
         }
 
-        public bool MouseMoved(CanvasRenderer renderer, double canvasX, double canvasY)
+        // Check if point is on a line
+        SKPoint prev = _canvasPoints[0];
+        for (int i = 1; i < _canvasPoints.Length; i++)
         {
-            if (!Editable)
-            {
-                return false;
-            }
+            SKPoint pt = _canvasPoints[i];
 
-            if (_draggingIndex != -1)
+            if (MathHelper.IsPointOnLine(prev.X, prev.Y, pt.X, pt.Y, canvasX, canvasY, WaypointRadius))
             {
                 renderer.AreaView.CanvasToLatLon(canvasX, canvasY, out double lat, out double lon);
-                Route[_draggingIndex].Latitude = lat;
-                Route[_draggingIndex].Longitude = lon;
+                Route.InsertWaypoint(i, lat, lon);
 
-                Location? snapTo = GetNearestSnapToLocationWithinTolerance(new SKPoint((float)canvasX, (float)canvasY), renderer.AreaView);
-                if (snapTo.HasValue)
-                {
-                    Route[_draggingIndex].Latitude = snapTo.Value.Latitude;
-                    Route[_draggingIndex].Longitude = snapTo.Value.Longitude;
-                }
+                _draggingIndex = i;
 
                 return true;
             }
 
+            prev = pt;
+        }
+
+        return false;
+    }
+
+    public bool PrimaryMouseUp(CanvasRenderer renderer, double canvasX, double canvasY)
+    {
+        _draggingIndex = -1;
+
+        return false;
+    }
+
+    public bool MouseMoved(CanvasRenderer renderer, double canvasX, double canvasY)
+    {
+        if (!Editable)
+        {
             return false;
         }
 
-        public bool SecondaryMouseClicked(CanvasRenderer renderer, double canvasX, double canvasY)
+        if (_draggingIndex != -1)
         {
+            Waypoint draggingWaypoint = Route[_draggingIndex];
+
             renderer.AreaView.CanvasToLatLon(canvasX, canvasY, out double lat, out double lon);
 
-            Location? snapTo = GetNearestSnapToLocationWithinTolerance(new SKPoint((float)canvasX, (float)canvasY), renderer.AreaView);
-            if (snapTo.HasValue)
+            SnapToLocation? snapTo = GetNearestSnapToLocationWithinTolerance(new SKPoint((float)canvasX, (float)canvasY), renderer.AreaView);
+            if (snapTo is not null)
             {
-                lat = snapTo.Value.Latitude;
-                lon = snapTo.Value.Longitude;
+                draggingWaypoint.Latitude = snapTo.Location.Latitude;
+                draggingWaypoint.Longitude = snapTo.Location.Longitude;
+            }
+            else
+            {
+                draggingWaypoint.Latitude = lat;
+                draggingWaypoint.Longitude = lon;
             }
 
-            Route.AddWaypoint(lat, lon);
+            WaypointMoved?.Invoke(this, new WaypointMovedEventArgs(draggingWaypoint, snapTo));
 
             return true;
         }
 
-        public bool Editable { get; set; } = true;
+        return false;
+    }
 
-        Location? GetNearestSnapToLocationWithinTolerance(SKPoint canvasPoint, GeoConverter converter)
+    public bool SecondaryMouseClicked(CanvasRenderer renderer, double canvasX, double canvasY)
+    {
+        renderer.AreaView.CanvasToLatLon(canvasX, canvasY, out double lat, out double lon);
+
+        SnapToLocation? snapTo = GetNearestSnapToLocationWithinTolerance(new SKPoint((float)canvasX, (float)canvasY), renderer.AreaView);
+        if (snapTo is not null)
         {
-            Location? nearest = null;
-            float nearestDist = float.MaxValue;
-
-            foreach (Location loc in SnapToLocations)
-            {
-                SKPoint locCanvas = converter.LatLonToCanvas(loc.Latitude, loc.Longitude);
-                float dist = MathHelper.DistanceBetweenPoints(canvasPoint.X, canvasPoint.Y, locCanvas.X, locCanvas.Y);
-                if (dist < nearestDist)
-                {
-                    nearestDist = dist;
-                    nearest = loc;
-                }
-            }
-
-            if (nearestDist <= SnapToTolerancePixels)
-            {
-                return nearest;
-            }
-
-            return null;
+            lat = snapTo.Location.Latitude;
+            lon = snapTo.Location.Longitude;
         }
 
-        public ICollection<Location> SnapToLocations { get; private set; } = new List<Location>();
+        Route.AddWaypoint(lat, lon);
 
-        public float SnapToTolerancePixels { get; set; } = 10f;
+        return true;
     }
+
+    public bool Editable { get; set; } = true;
+
+    SnapToLocation? GetNearestSnapToLocationWithinTolerance(SKPoint canvasPoint, GeoConverter converter)
+    {
+        SnapToLocation? nearest = null;
+        float nearestDist = float.MaxValue;
+
+        foreach (SnapToLocation loc in SnapToLocations)
+        {
+            SKPoint locCanvas = converter.LatLonToCanvas(loc.Location.Latitude, loc.Location.Longitude);
+            float dist = MathHelper.DistanceBetweenPoints(canvasPoint.X, canvasPoint.Y, locCanvas.X, locCanvas.Y);
+            if (dist < nearestDist)
+            {
+                nearestDist = dist;
+                nearest = loc;
+            }
+        }
+
+        if (nearestDist <= SnapToTolerancePixels)
+        {
+            return nearest;
+        }
+
+        return null;
+    }
+
+    public ICollection<SnapToLocation> SnapToLocations { get; private set; } = new List<SnapToLocation>();
+
+    public float SnapToTolerancePixels { get; set; } = 10f;
+}
+
+public class SnapToLocation
+{
+    public SnapToLocation(float latitude, float longitude, object? tag = null)
+    {
+        Location = new Location(latitude, longitude);
+        Tag = tag;
+    }
+
+    public SnapToLocation(Location location, object? tag = null)
+    {
+        Location = location;
+        Tag = tag;
+    }
+
+    public Location Location { get; }
+
+    public object? Tag { get; }
+}
+
+public sealed class WaypointMovedEventArgs : EventArgs
+{
+    public WaypointMovedEventArgs(Waypoint waypoint, SnapToLocation? snapToLocation)
+    {
+        Waypoint = waypoint;
+    }
+
+    public Waypoint Waypoint { get; }
+
+    public SnapToLocation? SnappedToLocation { get; }
 }
