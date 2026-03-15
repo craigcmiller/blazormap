@@ -42,11 +42,6 @@ namespace CraigMiller.Map.Core.Layers
         {
             ProjectedRect projectedRect = converter.ProjectedRect;
 
-            SKPoint a = converter.ProjectedToCanvas(projectedRect.Left, projectedRect.Bottom);
-            SKPoint b = converter.ProjectedToCanvas(projectedRect.Left, projectedRect.Bottom + projectedRect.Height);
-            canvas.DrawCircle(a.X + 10f, a.Y, 6f, _boundsPaint);
-            canvas.DrawCircle(b.X + 20f, b.Y, 6f, _boundsPaint);
-
             using var path = new SKPath();
 
             foreach (Polygon<TTag> polygon in _polygons)
