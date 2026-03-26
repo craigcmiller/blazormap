@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dotnet clean:*)",
+      "Bash(dotnet restore:*)",
+      "Bash(dotnet build:*)",
+      "Bash(find C:/code/blazormap/src/CraigMiller.Map/CraigMiller.Map.Maui.Example/obj -name *.g.cs -o -name *.g.i.cs)",
+      "Bash(find C:/Users/CraigMiller/AppData -name *.xaml -path *Windows* -path *Maui*)",
+      "Bash(dotnet new:*)",
+      "Read(//tmp/MauiRef/Platforms/Windows/**)",
+      "Read(//tmp/MauiRef/**)"
+    ]
+  }
+}

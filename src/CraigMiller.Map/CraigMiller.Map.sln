@@ -13,6 +13,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CraigMiller.Map.WebApi", "C
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CraigMiller.Map.Core.Tests", "CraigMiller.Map.Core.Tests\CraigMiller.Map.Core.Tests.csproj", "{28696E83-C73D-4E53-AE74-C40321A1C941}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CraigMiller.Map.Maui", "CraigMiller.Map.Maui\CraigMiller.Map.Maui.csproj", "{C1D2E3F4-A5B6-7890-CDEF-123456789ABC}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CraigMiller.Map.Maui.Example", "CraigMiller.Map.Maui.Example\CraigMiller.Map.Maui.Example.csproj", "{D2E3F4A5-B6C7-8901-DEFA-23456789ABCD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +43,14 @@ Global
 		{28696E83-C73D-4E53-AE74-C40321A1C941}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{28696E83-C73D-4E53-AE74-C40321A1C941}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{28696E83-C73D-4E53-AE74-C40321A1C941}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C1D2E3F4-A5B6-7890-CDEF-123456789ABC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C1D2E3F4-A5B6-7890-CDEF-123456789ABC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C1D2E3F4-A5B6-7890-CDEF-123456789ABC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C1D2E3F4-A5B6-7890-CDEF-123456789ABC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D2E3F4A5-B6C7-8901-DEFA-23456789ABCD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D2E3F4A5-B6C7-8901-DEFA-23456789ABCD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D2E3F4A5-B6C7-8901-DEFA-23456789ABCD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D2E3F4A5-B6C7-8901-DEFA-23456789ABCD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

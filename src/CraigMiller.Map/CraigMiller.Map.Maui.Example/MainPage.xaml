@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:map="clr-namespace:CraigMiller.Map.Maui;assembly=CraigMiller.Map.Maui"
+             x:Class="CraigMiller.Map.Maui.Example.MainPage"
+             Title="Map">
+    <Grid RowDefinitions="*, Auto">
+
+        <map:MapView x:Name="MapView"
+                     Grid.Row="0"
+                     HorizontalOptions="Fill"
+                     VerticalOptions="Fill" />
+
+        <HorizontalStackLayout Grid.Row="1"
+                               Padding="8"
+                               Spacing="8"
+                               HorizontalOptions="Center">
+            <Button Text="London" Clicked="OnLondonClicked" />
+            <Button Text="New York" Clicked="OnNewYorkClicked" />
+            <Button Text="Sydney" Clicked="OnSydneyClicked" />
+            <Button Text="World" Clicked="OnWorldClicked" />
+        </HorizontalStackLayout>
+
+    </Grid>
+</ContentPage>

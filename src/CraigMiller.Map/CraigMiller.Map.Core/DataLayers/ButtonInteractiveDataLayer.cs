@@ -3,7 +3,7 @@ using SkiaSharp;
 
 namespace CraigMiller.Map.Core.DataLayers;
 
-public class ButtonInteractiveDataLayer : IDataLayer, IInteractiveLayer
+public class ButtonInteractiveDataLayer : IDataLayer, IInteractiveLayer, IDisposable
 {
     readonly SKPaint _textPaint = new SKPaint
     {
@@ -24,6 +24,13 @@ public class ButtonInteractiveDataLayer : IDataLayer, IInteractiveLayer
 
     public ButtonInteractiveDataLayer()
     {
+    }
+
+    public void Dispose()
+    {
+        _textPaint.Dispose();
+        _font.Dispose();
+        _backgroundPaint?.Dispose();
     }
 
     public float X { get; set; }
