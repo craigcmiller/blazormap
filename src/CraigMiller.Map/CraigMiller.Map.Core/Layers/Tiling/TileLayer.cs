@@ -25,6 +25,7 @@ namespace CraigMiller.Map.Core.Layers.Tiling
                 bitmap.Dispose();
                 _loadingTiles.Remove(tile);
             }, 1024);
+
             _paint = new SKPaint
             {
                 IsAntialias = true,
@@ -35,10 +36,17 @@ namespace CraigMiller.Map.Core.Layers.Tiling
         public void Dispose()
         {
             _paint.Dispose();
+
+            _cache.Dispose();
         }
 
         public void DrawLayer(SKCanvas canvas, GeoConverter converter, GraphicsObjects graphicsObjects)
         {
+            // Adjust cache capacity based on the current zoom level and canvas size to try to keep enough tiles in memory
+            // for smooth panning and zooming without using too much memory. The multiplier is somewhat arbitrary.
+            _cache.Capacity = ((int)converter.CanvasWidth / TileSize) * ((int)converter.CanvasHeight / TileSize) * 8;
+            Console.WriteLine($"Tile cache capacity: {_cache.Capacity}");
+
             ProjectedRect projectedRect = converter.ProjectedRect;
 
             int zoomLevel = Tile.GetZoomLevel(converter.Zoom, TileSize);

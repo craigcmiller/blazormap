@@ -1,9 +1,8 @@
-﻿using SkiaSharp;
+using SkiaSharp;
 
-namespace CraigMiller.Map.Core.Engine
+namespace CraigMiller.Map.Core.Engine;
+
+public interface IDataLayer
 {
-    public interface IDataLayer
-    {
-        void DrawLayer(SKCanvas canvas, double canvasWidth, double canvasHeight, SKMatrix rotationMatrix, GeoConverter converter);
-    }
+    void DrawLayer(SKCanvas canvas, double canvasWidth, double canvasHeight, SKMatrix rotationMatrix, GeoConverter converter);
 }

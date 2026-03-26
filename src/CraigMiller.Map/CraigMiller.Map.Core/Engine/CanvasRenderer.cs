@@ -2,210 +2,209 @@ using CraigMiller.Map.Core.Geo;
 using CraigMiller.Map.Core.Graphics;
 using SkiaSharp;
 
-namespace CraigMiller.Map.Core.Engine
+namespace CraigMiller.Map.Core.Engine;
+
+public class CanvasRenderer : IDisposable
 {
-    public class CanvasRenderer : IDisposable
+    readonly IList<RenderableLayer> _layers = new List<RenderableLayer>();
+    readonly IList<RenderableLayer> _layersToEvict = new List<RenderableLayer>();
+    readonly IList<RenderableDataLayer> _dataLayers = new List<RenderableDataLayer>();
+    readonly GraphicsObjects _graphicsObjects = new GraphicsObjects();
+
+    public CanvasRenderer()
     {
-        readonly IList<RenderableLayer> _layers = new List<RenderableLayer>();
-        readonly IList<RenderableLayer> _layersToEvict = new List<RenderableLayer>();
-        readonly IList<RenderableDataLayer> _dataLayers = new List<RenderableDataLayer>();
-        readonly GraphicsObjects _graphicsObjects = new GraphicsObjects();
-
-        public CanvasRenderer()
+        AreaView = new GeoConverter
         {
-            AreaView = new GeoConverter
+            ProjectedLeft = SmcProjection.WorldMin,
+            ProjectedBottom = SmcProjection.WorldMin,
+            Zoom = 0.0001
+        };
+    }
+
+    public void Dispose()
+    {
+        foreach (RenderableLayer layer in _layers)
+        {
+            if (layer is IDisposable disposableLayer)
             {
-                ProjectedLeft = SmcProjection.WorldMin,
-                ProjectedBottom = SmcProjection.WorldMin,
-                Zoom = 0.0001
-            };
+                disposableLayer.Dispose();
+            }
         }
 
-        public void Dispose()
+        foreach (RenderableDataLayer dataLayer in _dataLayers)
         {
-            foreach (RenderableLayer layer in _layers)
+            if (dataLayer is IDisposable disposableLayer)
             {
-                if (layer is IDisposable disposableLayer)
+                disposableLayer.Dispose();
+            }
+        }
+
+        _graphicsObjects.Dispose();
+    }
+
+    public GeoConverter AreaView { get; set; }
+
+    public void AddLayer(ILayer layer)
+    {
+        _layers.Add(new RenderableLayer(layer));
+    }
+
+    /// <summary>
+    /// Gets all layers of type <typeparamref name="T"/>
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public IEnumerable<T> GetLayers<T>() where T : ILayer
+        => _layers.Where(rl => rl.Layer is T).Select(rl => (T)rl.Layer);
+
+    /// <summary>
+    /// Removes all layers of type <typeparamref name="T"/>
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    public void RemoveLayers<T>() where T : ILayer
+    {
+        foreach (RenderableLayer layer in _layers.Where(rl => rl.Layer is T).ToArray())
+        {
+            _layers.Remove(layer);
+        }
+    }
+
+    /// <summary>
+    /// Gets the interactive layers in reverse order so that the most recently added will have event priority
+    /// </summary>
+    public IEnumerable<IInteractiveLayer> InteractiveLayers
+    {
+        get
+        {
+            for (int i = _dataLayers.Count - 1; i >= 0; i--)
+            {
+                RenderableDataLayer renderableDataLayer = _dataLayers[i];
+
+                if (renderableDataLayer.InteractiveLayer is not null && renderableDataLayer.ShouldRender)
                 {
-                    disposableLayer.Dispose();
+                    yield return renderableDataLayer.InteractiveLayer;
                 }
             }
 
-            foreach (RenderableDataLayer dataLayer in _dataLayers)
+            for (int i = _layers.Count - 1; i >= 0; i--)
             {
-                if (dataLayer is IDisposable disposableLayer)
+                RenderableLayer renderableLayer = _layers[i];
+
+                if (renderableLayer.InteractiveLayer is not null && renderableLayer.ShouldRender)
                 {
-                    disposableLayer.Dispose();
+                    yield return renderableLayer.InteractiveLayer;
                 }
             }
-
-            _graphicsObjects.Dispose();
         }
+    }
 
-        public GeoConverter AreaView { get; set; }
+    public void DrawMapLayers(SKCanvas canvas)
+    {
+        DateTime drawStart = DateTime.UtcNow;
 
-        public void AddLayer(ILayer layer)
+        foreach (RenderableLayer renderableLayer in _layers)
         {
-            _layers.Add(new RenderableLayer(layer));
-        }
-
-        /// <summary>
-        /// Gets all layers of type <typeparamref name="T"/>
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
-        public IEnumerable<T> GetLayers<T>() where T : ILayer
-            => _layers.Where(rl => rl.Layer is T).Select(rl => (T)rl.Layer);
-
-        /// <summary>
-        /// Removes all layers of type <typeparamref name="T"/>
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        public void RemoveLayers<T>() where T : ILayer
-        {
-            foreach (RenderableLayer layer in _layers.Where(rl => rl.Layer is T).ToArray())
+            if (renderableLayer.ShouldRender)
             {
-                _layers.Remove(layer);
-            }
-        }
-
-        /// <summary>
-        /// Gets the interactive layers in reverse order so that the most recently added will have event priority
-        /// </summary>
-        public IEnumerable<IInteractiveLayer> InteractiveLayers
-        {
-            get
-            {
-                for (int i = _dataLayers.Count - 1; i >= 0; i--)
+                if (renderableLayer.AnimatedLayer is not null)
                 {
-                    RenderableDataLayer renderableDataLayer = _dataLayers[i];
-
-                    if (renderableDataLayer.InteractiveLayer is not null && renderableDataLayer.ShouldRender)
+                    if (renderableLayer.AnimatedLayer.Update(AreaView, drawStart))
                     {
-                        yield return renderableDataLayer.InteractiveLayer;
+                        _layersToEvict.Add(renderableLayer);
+
+                        continue;
                     }
                 }
 
-                for (int i = _layers.Count - 1; i >= 0; i--)
-                {
-                    RenderableLayer renderableLayer = _layers[i];
-
-                    if (renderableLayer.InteractiveLayer is not null && renderableLayer.ShouldRender)
-                    {
-                        yield return renderableLayer.InteractiveLayer;
-                    }
-                }
+                renderableLayer.Layer.DrawLayer(canvas, AreaView, _graphicsObjects);
             }
         }
 
-        public void DrawMapLayers(SKCanvas canvas)
+        if (_layersToEvict.Count > 0)
         {
-            DateTime drawStart = DateTime.UtcNow;
-
-            foreach (RenderableLayer renderableLayer in _layers)
+            foreach (RenderableLayer renderableLayer in _layersToEvict)
             {
-                if (renderableLayer.ShouldRender)
-                {
-                    if (renderableLayer.AnimatedLayer is not null)
-                    {
-                        if (renderableLayer.AnimatedLayer.Update(AreaView, drawStart))
-                        {
-                            _layersToEvict.Add(renderableLayer);
-
-                            continue;
-                        }
-                    }
-
-                    renderableLayer.Layer.DrawLayer(canvas, AreaView, _graphicsObjects);
-                }
+                _layers.Remove(renderableLayer);
             }
 
-            if (_layersToEvict.Count > 0)
+            _layersToEvict.Clear();
+        }
+    }
+
+    public void AddDataLayer(IDataLayer layer) => _dataLayers.Add(new RenderableDataLayer(layer));
+
+    public void DrawDataLayers(SKCanvas canvas, double canvasWidth, double canvasHeight)
+    {
+        SKMatrix rotatedMatrix = canvas.TotalMatrix;
+        canvas.Restore();
+
+        foreach (RenderableDataLayer dataLayer in _dataLayers)
+        {
+            if (dataLayer.ShouldRender)
             {
-                foreach (RenderableLayer renderableLayer in _layersToEvict)
-                {
-                    _layers.Remove(renderableLayer);
-                }
-
-                _layersToEvict.Clear();
+                dataLayer.Layer.DrawLayer(canvas, canvasWidth, canvasHeight, rotatedMatrix, AreaView);
             }
         }
+    }
 
-        public void AddDataLayer(IDataLayer layer) => _dataLayers.Add(new RenderableDataLayer(layer));
+    public double CanvasWidthOffset { get; private set; }
 
-        public void DrawDataLayers(SKCanvas canvas, double canvasWidth, double canvasHeight)
+    public double CanvasHeightOffset { get; private set; }
+
+    public void BeginRotation(SKCanvas canvas)
+    {
+        canvas.Scale(AreaView.PixelScale);
+
+        canvas.Save();
+
+        double canvasWidth = AreaView.CanvasWidth;
+        double canvasHeight = AreaView.CanvasHeight;
+
+        double maxDimension = Math.Ceiling(Math.Sqrt(canvasWidth * canvasWidth + canvasHeight * canvasHeight));
+        CanvasWidthOffset = maxDimension - canvasWidth;
+        CanvasHeightOffset = maxDimension - canvasHeight;
+        AreaView.CanvasWidth = AreaView.CanvasHeight = maxDimension;
+
+        float halfWidth = (float)canvasWidth / 2f;
+        float halfHeight = (float)canvasHeight / 2f;
+        canvas.Translate(halfWidth, halfHeight);
+        canvas.RotateRadians(-AreaView.RotationRadians);
+
+        if (canvas.TotalMatrix.TryInvert(out SKMatrix reveresedMatrix))
         {
-            SKMatrix rotatedMatrix = canvas.TotalMatrix;
-            canvas.Restore();
-
-            foreach (RenderableDataLayer dataLayer in _dataLayers)
-            {
-                if (dataLayer.ShouldRender)
-                {
-                    dataLayer.Layer.DrawLayer(canvas, canvasWidth, canvasHeight, rotatedMatrix, AreaView);
-                }
-            }
+            ReverseRotationMatrix = reveresedMatrix;
         }
 
-        public double CanvasWidthOffset { get; private set; }
+        canvas.Translate((float)-maxDimension / 2f, (float)-maxDimension / 2f);
+    }
 
-        public double CanvasHeightOffset { get; private set; }
+    public Location Center
+    {
+        get => AreaView.CenterLocation;
+        set => AreaView.CenterLocation = value;
+    }
 
-        public void BeginRotation(SKCanvas canvas)
-        {
-            canvas.Scale(AreaView.PixelScale);
+    public double Zoom
+    {
+        get => AreaView.Zoom;
+        set => AreaView.Zoom = value;
+    }
 
-            canvas.Save();
+    public float RotationDegrees
+    {
+        get => AreaView.RotationDegrees;
+        set => AreaView.RotationDegrees = value;
+    }
 
-            double canvasWidth = AreaView.CanvasWidth;
-            double canvasHeight = AreaView.CanvasHeight;
+    public SKMatrix ReverseRotationMatrix { get; private set; }
 
-            double maxDimension = Math.Ceiling(Math.Sqrt(canvasWidth * canvasWidth + canvasHeight * canvasHeight));
-            CanvasWidthOffset = maxDimension - canvasWidth;
-            CanvasHeightOffset = maxDimension - canvasHeight;
-            AreaView.CanvasWidth = AreaView.CanvasHeight = maxDimension;
+    public void ReverseRotatePoint(double x, double y, out double rotatedX, out double rotatedY)
+    {
+        SKPoint pt = ReverseRotationMatrix.MapPoint((float)x * AreaView.PixelScale, (float)y * AreaView.PixelScale);
+        rotatedX = pt.X;
+        rotatedY = pt.Y;
 
-            float halfWidth = (float)canvasWidth / 2f;
-            float halfHeight = (float)canvasHeight / 2f;
-            canvas.Translate(halfWidth, halfHeight);
-            canvas.RotateRadians(-AreaView.RotationRadians);
-
-            if (canvas.TotalMatrix.TryInvert(out SKMatrix reveresedMatrix))
-            {
-                ReverseRotationMatrix = reveresedMatrix;
-            }
-
-            canvas.Translate((float)-maxDimension / 2f, (float)-maxDimension / 2f);
-        }
-
-        public Location Center
-        {
-            get => AreaView.CenterLocation;
-            set => AreaView.CenterLocation = value;
-        }
-
-        public double Zoom
-        {
-            get => AreaView.Zoom;
-            set => AreaView.Zoom = value;
-        }
-
-        public float RotationDegrees
-        {
-            get => AreaView.RotationDegrees;
-            set => AreaView.RotationDegrees = value;
-        }
-
-        public SKMatrix ReverseRotationMatrix { get; private set; }
-
-        public void ReverseRotatePoint(double x, double y, out double rotatedX, out double rotatedY)
-        {
-            SKPoint pt = ReverseRotationMatrix.MapPoint((float)x * AreaView.PixelScale, (float)y * AreaView.PixelScale);
-            rotatedX = pt.X;
-            rotatedY = pt.Y;
-
-            rotatedX += AreaView.CanvasWidth / 2.0;
-            rotatedY += AreaView.CanvasHeight / 2.0;
-        }
+        rotatedX += AreaView.CanvasWidth / 2.0;
+        rotatedY += AreaView.CanvasHeight / 2.0;
     }
 }
