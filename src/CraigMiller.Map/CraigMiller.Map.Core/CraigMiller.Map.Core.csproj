@@ -16,4 +16,8 @@
 		<PackageReference Include="SkiaSharp" Version="3.119.3-preview.1.1" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="SpatialDataStore\" />
+	</ItemGroup>
+
 </Project>
