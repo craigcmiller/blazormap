@@ -187,7 +187,7 @@ public class MapView : SKCanvasView
         tileLayerHttpClient.DefaultRequestHeaders.TryAddWithoutValidation("Connection", "keep-alive");
         tileLayerHttpClient.DefaultRequestHeaders.TryAddWithoutValidation("Upgrade-Insecure-Requests", "1");
 
-        _engine.AddLayer(new TileLayer(new HttpTileLoader(tileLayerHttpClient)));
+        _engine.AddLayer(new TileLayer(new DiskCachingTileLoader(new HttpTileLoader(tileLayerHttpClient), "TileCache")));
         _engine.AddLayer(new GridLineLayer());
         _engine.AddDataLayer(new ScaleDataLayer());
         _engine.AddDataLayer(new CompassDataLayer());

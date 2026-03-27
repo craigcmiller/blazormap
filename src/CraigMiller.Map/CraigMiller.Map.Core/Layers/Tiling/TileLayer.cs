@@ -45,7 +45,6 @@ namespace CraigMiller.Map.Core.Layers.Tiling
             // Adjust cache capacity based on the current zoom level and canvas size to try to keep enough tiles in memory
             // for smooth panning and zooming without using too much memory. The multiplier is somewhat arbitrary.
             _cache.Capacity = ((int)converter.CanvasWidth / TileSize) * ((int)converter.CanvasHeight / TileSize) * 8;
-            Console.WriteLine($"Tile cache capacity: {_cache.Capacity}");
 
             ProjectedRect projectedRect = converter.ProjectedRect;
 
@@ -53,7 +52,7 @@ namespace CraigMiller.Map.Core.Layers.Tiling
 
             foreach (Tile tile in Tile.GetTilesInProjectedRect(projectedRect, zoomLevel, TileSize))
             {
-                if (!projectedRect.IntersectsWith(tile.GetProjectedBounds(TileSize)))
+                if (!projectedRect.IntersectsWith(tile.GetProjectedBounds(TileSize)) || tile.X < 0 || tile.Y < 0)
                 {
                     continue;
                 }
@@ -85,6 +84,11 @@ namespace CraigMiller.Map.Core.Layers.Tiling
                         {
                             _tileLoader.LoadTile(tile, default).ContinueWith(t =>
                             {
+                                if (!t.IsCompletedSuccessfully)
+                                {
+                                    return;
+                                }
+
                                 _cache.Add(tile, t.Result);
 
                                 lock (_loadingTiles)
