@@ -90,6 +90,7 @@ jobs:
     - name: NuGet-Build-MauiMap
       run: |
         cd src/CraigMiller.Map/CraigMiller.Map.Maui
+        dotnet workload install maui-android
         dotnet restore
         dotnet build --configuration Release --no-restore
         dotnet pack --output .

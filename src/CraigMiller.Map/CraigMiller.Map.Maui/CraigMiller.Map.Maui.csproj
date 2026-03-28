@@ -16,7 +16,7 @@
     <Title>CraigMiller.Map.Maui</Title>
     <Description>Open source layered map engine for .NET MAUI</Description>
     <PackageProjectUrl>https://craigcmiller.github.io/blazormap/</PackageProjectUrl>
-    <VersionPrefix>0.6.6</VersionPrefix>
+    <VersionPrefix>0.6.7</VersionPrefix>
     <RepositoryUrl>https://github.com/craigcmiller/blazormap</RepositoryUrl>
 	</PropertyGroup>
 

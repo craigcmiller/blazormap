@@ -170,7 +170,7 @@ public class CanvasRenderer : IDisposable
         canvas.Translate(halfWidth, halfHeight);
 
         // Get rid of any fraction of a degree of rotation to avoid tiling issues with the canvas when rotating.
-        if (Math.Abs(AreaView.RotationRadians) > 0.001)
+        if (Math.Abs(AreaView.RotationRadians) < 0.001)
         {
             AreaView.RotationRadians = 0f;
         }
