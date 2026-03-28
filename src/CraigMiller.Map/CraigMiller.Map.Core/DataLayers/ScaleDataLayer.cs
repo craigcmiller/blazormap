@@ -1,17 +1,18 @@
-﻿using CraigMiller.Map.Core.Engine;
+using CraigMiller.Map.Core.Engine;
 using CraigMiller.Map.Core.Units;
 using SkiaSharp;
 
 namespace CraigMiller.Map.Core.DataLayers;
 
-public class ScaleDataLayer : IDataLayer
+public class ScaleDataLayer : IDataLayer, IDisposable
 {
     readonly SKPaint _backgroundPaint = new SKPaint
     {
         IsAntialias = true,
         Style = SKPaintStyle.Stroke,
         Color = SKColors.White,
-        StrokeWidth = 5f
+        StrokeWidth = 5f,
+        StrokeCap = SKStrokeCap.Round,
     };
 
     readonly SKPaint _foregroundPaint = new SKPaint
@@ -20,6 +21,7 @@ public class ScaleDataLayer : IDataLayer
         Style = SKPaintStyle.Stroke,
         Color = SKColors.DarkGray,
         StrokeWidth = 3f,
+        StrokeCap = SKStrokeCap.Round,
     };
 
     readonly SKPaint _textPaint = new SKPaint
@@ -33,6 +35,14 @@ public class ScaleDataLayer : IDataLayer
     {
         Embolden = true,
     };
+
+    public void Dispose()
+    {
+        _backgroundPaint.Dispose();
+        _foregroundPaint.Dispose();
+        _textPaint.Dispose();
+        _font.Dispose();
+    }
 
     public void DrawLayer(SKCanvas canvas, double canvasWidth, double canvasHeight, SKMatrix rotationMatrix, GeoConverter converter)
     {
@@ -71,7 +81,12 @@ public class ScaleDataLayer : IDataLayer
 
         string valText = distInt == 0 ? distVal.ToString("0.00") : distInt.ToString();
 
-        canvas.DrawText($"{valText} {Units.ShortSuffix()}", (scaleXEnd - scaleXStart) / 2f + scaleXStart, scaleY - 6f, SKTextAlign.Center, _font, _textPaint);
+        string text = $"{valText} {Units.ShortSuffix()}";
+
+        _textPaint.Color = SKColors.White;
+        canvas.DrawText(text, (scaleXEnd - scaleXStart) / 2f + scaleXStart, scaleY - 6f, SKTextAlign.Center, _font, _textPaint);
+        _textPaint.Color = SKColors.Black;
+        canvas.DrawText(text, (scaleXEnd - scaleXStart) / 2f + scaleXStart + 1, scaleY - 5f, SKTextAlign.Center, _font, _textPaint);
     }
 
     public float ScaleWidth { get; set; } = 150f;
