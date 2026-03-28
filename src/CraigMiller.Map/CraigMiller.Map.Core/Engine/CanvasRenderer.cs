@@ -168,6 +168,13 @@ public class CanvasRenderer : IDisposable
         float halfWidth = (float)canvasWidth / 2f;
         float halfHeight = (float)canvasHeight / 2f;
         canvas.Translate(halfWidth, halfHeight);
+
+        // Get rid of any fraction of a degree of rotation to avoid tiling issues with the canvas when rotating.
+        if (Math.Abs(AreaView.RotationRadians) > 0.001)
+        {
+            AreaView.RotationRadians = 0f;
+        }
+
         canvas.RotateRadians(-AreaView.RotationRadians);
 
         if (canvas.TotalMatrix.TryInvert(out SKMatrix reveresedMatrix))

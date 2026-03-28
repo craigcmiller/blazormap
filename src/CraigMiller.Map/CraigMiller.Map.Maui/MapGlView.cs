@@ -3,11 +3,11 @@ using SkiaSharp.Views.Maui.Controls;
 
 namespace CraigMiller.Map.Maui;
 
-public class MapView : SKCanvasView
+public class MapGlView : SKGLView
 {
     readonly MauiMap _map;
 
-    public MapView()
+    public MapGlView()
     {
         _map = new MauiMap();
 
@@ -24,7 +24,7 @@ public class MapView : SKCanvasView
         _map.OnHandlerChanged(Handler, Dispatcher, InvalidateSurface);
     }
 
-    protected override void OnPaintSurface(SKPaintSurfaceEventArgs e)
+    protected override void OnPaintSurface(SKPaintGLSurfaceEventArgs e)
     {
         _map.OnPaintSurface(e.Info, e.Surface.Canvas);
     }

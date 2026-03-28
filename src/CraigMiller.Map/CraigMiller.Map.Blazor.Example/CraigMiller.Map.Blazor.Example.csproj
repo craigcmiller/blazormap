@@ -10,14 +10,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <None Remove="Airspace\airspace.yaml" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <EmbeddedResource Include="Airspace\airspace.yaml" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<PackageReference Include="Blazor.Geolocation.WebAssembly" Version="9.0.1" />
 		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.5" />
 		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.5" PrivateAssets="all" />

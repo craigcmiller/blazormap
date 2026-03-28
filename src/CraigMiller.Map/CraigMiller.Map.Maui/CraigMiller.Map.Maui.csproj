@@ -12,6 +12,12 @@
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">15.0</SupportedOSPlatformVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">26.0</SupportedOSPlatformVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.19041.0</SupportedOSPlatformVersion>
+
+    <Title>CraigMiller.Map.Maui</Title>
+    <Description>Open source layered map engine for .NET MAUI</Description>
+    <PackageProjectUrl>https://craigcmiller.github.io/blazormap/</PackageProjectUrl>
+    <VersionPrefix>0.6.6</VersionPrefix>
+    <RepositoryUrl>https://github.com/craigcmiller/blazormap</RepositoryUrl>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -23,7 +29,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
+	  <PackageReference Include="Microsoft.Maui.Controls" Version="10.0.51" />
 	</ItemGroup>
 
 </Project>

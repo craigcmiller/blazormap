@@ -12,9 +12,9 @@ public partial class MainPage : ContentPage
     {
         InitializeComponent();
 
-        MapView.AddDefaultLayers();
+        MapView.Map.AddDefaultLayers();
 
-        MapView.Setup = (_, engine) =>
+        MapView.Map.Setup = (_, engine) =>
         {
             engine.Center = new Location(51.5, -0.1); // London
             engine.Zoom = Tile.GetZoomScale(5);
@@ -35,7 +35,8 @@ public partial class MainPage : ContentPage
 
     void NavigateTo(Location location, int zoomLevel)
     {
-        var engine = MapView.Engine;
+        var engine = MapView.Map.Engine;
+
         engine.ClearAnimations();
         engine.EnqueueAnimation(new PanToLocationAnimation(location, TimeSpan.FromSeconds(1.5), RateFunctions.AccelerateDecelerate));
         engine.EnqueueAnimation(new ZoomAnimation(Tile.GetZoomScale(zoomLevel), TimeSpan.FromSeconds(1), RateFunctions.AccelerateDecelerate));
